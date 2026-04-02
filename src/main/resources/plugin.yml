@@ -1,0 +1,5 @@
+name: Rift
+version: '$version'
+
+main: com.kartersanamo.rift.Rift
+api-version: '1.21'
