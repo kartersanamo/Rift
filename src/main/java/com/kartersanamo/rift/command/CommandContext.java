@@ -1,4 +1,4 @@
 package com.kartersanamo.rift.command;
 
-public abstract class SubCommand {
+public class CommandContext {
 }
