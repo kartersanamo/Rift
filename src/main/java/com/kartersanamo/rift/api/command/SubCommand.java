@@ -1,6 +1,4 @@
-package com.kartersanamo.rift.command;
-
-import com.kartersanamo.rift.api.command.CommandContext;
+package com.kartersanamo.rift.api.command;
 
 import java.util.ArrayList;
 import java.util.List;

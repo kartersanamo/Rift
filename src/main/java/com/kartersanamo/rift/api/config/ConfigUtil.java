@@ -7,10 +7,42 @@ import org.bukkit.configuration.file.FileConfiguration;
 
 public class ConfigUtil {
 
-    // Config values here as 'public static'
+    public static boolean teleportDelayEnabled;
+    public static int teleportDelaySeconds;
+    public static Particle teleportDelayParticle;
+    public static int teleportDelayParticleRadius;
+    public static int teleportDelayParticleCount;
+    public static Sound teleportDelaySound;
+    public static int teleportDelaySoundVolume;
+    public static int teleportDelaySoundPitch;
+    public static Sound teleportCompleteSound;
+    public static int teleportCompleteSoundVolume;
+    public static int teleportCompleteSoundPitch;
+    public static Particle teleportCompleteParticle;
+    public static int teleportCompleteParticleRadius;
+    public static int teleportCompleteParticleCount;
+
+    public static int warpNameMinLength;
+    public static int warpNameMaxLength;
 
     public static void load(FileConfiguration cfg) {
-        return;
+        teleportDelayEnabled = cfg.getBoolean("teleport-delay.enabled", true);
+        teleportDelaySeconds = clamp(cfg.getInt("teleport-delay.seconds", 5), 1, 60);
+        teleportDelayParticle = cfg.contains("teleport-delay.particle") ? parseParticle(cfg.getString("teleport-delay.particle")) : Particle.HAPPY_VILLAGER;
+        teleportDelayParticleRadius = clamp(cfg.getInt("teleport-delay.particle-radius", 1), 0, 10);
+        teleportDelayParticleCount = clamp(cfg.getInt("teleport-delay.particle-count", 10), 0, 100);
+        teleportDelaySound = cfg.contains("teleport-delay.sound") ? parseSound(cfg.getString("teleport-delay.sound")) : Sound.ENTITY_ENDERMAN_TELEPORT;
+        teleportDelaySoundVolume = clamp(cfg.getInt("teleport-delay.sound-volume", 1), 0, 10);
+        teleportDelaySoundPitch = clamp(cfg.getInt("teleport-delay.sound-pitch", 1), 0, 10);
+        teleportCompleteSound = cfg.contains("teleport-complete.sound") ? parseSound(cfg.getString("teleport-complete.sound")) : Sound.ENTITY_ENDERMAN_TELEPORT;
+        teleportCompleteSoundVolume = clamp(cfg.getInt("teleport-complete.sound-volume", 1), 0, 10);
+        teleportCompleteSoundPitch = clamp(cfg.getInt("teleport-complete.sound-pitch", 1), 0, 10);
+        teleportCompleteParticle = cfg.contains("teleport-complete.particle") ? parseParticle(cfg.getString("teleport-complete.particle")) : Particle.FLAME;
+        teleportCompleteParticleRadius = clamp(cfg.getInt("teleport-complete.particle-radius", 1), 0, 10);
+        teleportCompleteParticleCount = clamp(cfg.getInt("teleport-complete.particle-count", 10), 0, 100);
+
+        warpNameMinLength = clamp(cfg.getInt("warp-name.min-length", 3), 1, 100);
+        warpNameMaxLength = clamp(cfg.getInt("warp-name.max-length", 16), 1, 100);
     }
 
     private static int normalizeGuiSize(int size, int fallback) {

@@ -1,4 +1,4 @@
-package com.kartersanamo.rift.api.util;
+package com.kartersanamo.rift.api.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -14,6 +14,11 @@ public class MessagesUtil {
     public static String chatPrefixSuccess;
     public static String chatPrefixWarning;
 
+    public static String teleportCountdown;
+    public static String teleportSuccessLocation;
+    public static String teleportSuccessPlayer;
+    public static String teleportCancelledMoved;
+
     public static void load(FileConfiguration cfg) {
         commandUsage = cfg.getString("command-usage", "Usage: %usage%");
         commandPlayerOnly = cfg.getString("command-player-only", "This command can only be executed by players.");
@@ -25,5 +30,10 @@ public class MessagesUtil {
         chatPrefixDefault = cfg.getString("chat-prefix-default", "&8&l[&b&lH0M3&8&l]");
         chatPrefixSuccess = cfg.getString("chat-prefix-success", "&8&l[&a&lH0M3&8&l]");
         chatPrefixWarning = cfg.getString("chat-prefix-warning", "&8&l[&e&lH0M3&8&l]");
+
+        teleportCountdown = cfg.getString("teleport-delay.countdown", "&7Teleporting in &b%seconds% &7seconds");
+        teleportSuccessLocation = cfg.getString("teleport-complete.success", "&7Teleported to &b%location%");
+        teleportSuccessPlayer = cfg.getString("teleport-complete.success-player", "&7Teleported to &b%player%");
+        teleportCancelledMoved = cfg.getString("teleport-cancelled.moved", "&7You moved, teleport cancelled.");
     }
 }

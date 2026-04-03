@@ -1,8 +1,7 @@
 package com.kartersanamo.rift.api.command;
 
-import com.kartersanamo.rift.api.util.MessagesUtil;
+import com.kartersanamo.rift.api.config.MessagesUtil;
 import com.kartersanamo.rift.api.util.PlaceholderUtil;
-import com.kartersanamo.rift.command.SubCommand;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

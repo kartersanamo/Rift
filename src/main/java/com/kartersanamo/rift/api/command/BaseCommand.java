@@ -4,7 +4,7 @@ import com.kartersanamo.rift.Rift;
 import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.command.annotations.CommandPermission;
 import com.kartersanamo.rift.api.command.annotations.PlayerOnly;
-import com.kartersanamo.rift.api.util.MessagesUtil;
+import com.kartersanamo.rift.api.config.MessagesUtil;
 import com.kartersanamo.rift.api.util.PlaceholderUtil;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;

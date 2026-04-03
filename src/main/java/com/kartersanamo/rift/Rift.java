@@ -5,13 +5,12 @@ import com.kartersanamo.rift.api.config.ConfigUtil;
 import com.kartersanamo.rift.api.gui.GUIManager;
 import com.kartersanamo.rift.api.logging.CoreLogger;
 import com.kartersanamo.rift.api.logging.LogLevel;
-import com.kartersanamo.rift.api.util.MessagesUtil;
+import com.kartersanamo.rift.api.config.MessagesUtil;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.logging.Logger;
 
 public final class Rift extends JavaPlugin {
 

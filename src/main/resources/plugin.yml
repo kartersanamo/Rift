@@ -3,3 +3,36 @@ version: '$version'
 
 main: com.kartersanamo.rift.Rift
 api-version: '1.21'
+
+commands:
+  rift:
+    description: Rift commands.
+    usage: /<command> <subcommand>
+    aliases: [r]
+    permission: rift.command
+    permission-message: You do not have permission to use this command.
+  setwarp:
+    description: Set a warp.
+    usage: /<command> <warp>
+    permission: rift.command
+    permission-message: You do not have permission to use this command.
+  deletewarp:
+    description: Delete a warp.
+    usage: /<command> <warp>
+    permission: rift.command
+    permission-message: You do not have permission to use this command.
+  warpinfo:
+    description: Get information about a warp.
+    usage: /<command> <warp>
+    permission: rift.command
+    permission-message: You do not have permission to use this command.
+  warp:
+    description: Teleport to a warp.
+    usage: /<command> <warp>
+    permission: rift.command
+    permission-message: You do not have permission to use this command.
+  warps:
+    description: List all warps.
+    usage: /<command>
+    permission: rift.command
+    permission-message: You do not have permission to use this command.

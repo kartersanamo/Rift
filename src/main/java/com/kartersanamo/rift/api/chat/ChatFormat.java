@@ -1,6 +1,6 @@
 package com.kartersanamo.rift.api.chat;
 
-import com.kartersanamo.rift.api.util.MessagesUtil;
+import com.kartersanamo.rift.api.config.MessagesUtil;
 
 public final class ChatFormat {
 
