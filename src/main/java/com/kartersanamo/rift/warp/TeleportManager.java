@@ -17,16 +17,15 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class TeleportManager {
-    private static final HashMap<UUID, UUID> playerTeleports = new HashMap<>();
-    private static final HashMap<UUID, Location> locationTeleports = new HashMap<>();
+    private static final HashMap<UUID, Warp> warpTeleports = new HashMap<>();
     private static final HashMap<UUID, BukkitTask> tasks = new HashMap<>();
 
-    public static void teleportToLocation(Player player, Location toLocation) {
-        locationTeleports.put(player.getUniqueId(), toLocation);
-        startTeleportCountdown(player, toLocation, null);
+    public static void teleportToWarp(Player player, Warp warp) {
+        warpTeleports.put(player.getUniqueId(), warp);
+        startTeleportCountdown(player, warp);
     }
 
-    private static void startTeleportCountdown(Player player, Location toLocation, Player target) {
+    private static void startTeleportCountdown(Player player, Warp warp) {
         if (ConfigUtil.teleportDelayEnabled) {
             BukkitTask task = new BukkitRunnable() {
                 int timeLeft = ConfigUtil.teleportDelaySeconds;
@@ -34,7 +33,7 @@ public class TeleportManager {
                 @Override
                 public void run() {
                     if (timeLeft <= 0) {
-                        doTeleport(player, toLocation, target);
+                        doTeleport(player, warp.getLocation());
                         this.cancel();
                         return;
                     }
@@ -57,11 +56,11 @@ public class TeleportManager {
             }.runTaskTimer(Rift.getInstance(), 0L, 20L);
             tasks.put(player.getUniqueId(), task);
         } else {
-            doTeleport(player, toLocation, target);
+            doTeleport(player, warp.getLocation());
         }
     }
 
-    private static void doTeleport(Player player, Location toLocation, Player target) {
+    private static void doTeleport(Player player, Location toLocation) {
         player.teleport(toLocation);
         if (ConfigUtil.teleportCompleteSound != null) {
             SoundUtil.play(player, ConfigUtil.teleportCompleteSound, ConfigUtil.teleportCompleteSoundVolume, ConfigUtil.teleportCompleteSoundPitch);
@@ -74,18 +73,12 @@ public class TeleportManager {
                     ConfigUtil.teleportCompleteParticleCount
             );
         }
-        if (target == null) {
-            player.sendMessage(ChatFormat.info(
-                    PlaceholderUtil.replace(
-                            MessagesUtil.teleportSuccessLocation,
-                            "%location%", LocationUtil.format(toLocation)
-                    )
-            ));
-        } else {
-            player.sendMessage(ChatFormat.info(
-                    PlaceholderUtil.replace(MessagesUtil.teleportSuccessPlayer, "%player%", target.getName())
-            ));
-        }
+        player.sendMessage(ChatFormat.info(
+                PlaceholderUtil.replace(
+                        MessagesUtil.teleportSuccessLocation,
+                        "%location%", LocationUtil.format(toLocation)
+                )
+        ));
         removeTeleport(player.getUniqueId());
     }
 
@@ -102,8 +95,7 @@ public class TeleportManager {
     }
 
     public static void removeTeleport(UUID uuid) {
-        playerTeleports.remove(uuid);
-        locationTeleports.remove(uuid);
+        warpTeleports.remove(uuid);
         tasks.remove(uuid);
     }
 }
