@@ -31,6 +31,10 @@ public class Warp {
     }
 
     public void teleport(Player player) {
+        // If the player is currently counting down for a teleport, cancel the old one, and start the new one
+        if (TeleportManager.isPlayerTeleporting(player)) {
+            TeleportManager.removeTeleport(player.getUniqueId());
+        }
         TeleportManager.teleportToLocation(player, location);
         uses++;
     }

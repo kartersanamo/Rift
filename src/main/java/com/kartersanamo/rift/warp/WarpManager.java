@@ -158,7 +158,6 @@ public class WarpManager {
     }
 
     public Warp getWarp(String name) {
-        // TODO: Validate warp name
         Map<String, String> nameToId = getWarpNameToId();
         if (nameToId == null) {
             return null;
@@ -190,13 +189,14 @@ public class WarpManager {
         return null; // Not found
     }
 
-    public void deleteWarp(String homeName) {
+    public boolean deleteWarp(String homeName) {
         String id = getIdByName(homeName);
         if (id == null) {
-            return; // Home not found
+            return false;
         }
         warps.remove(id);
         saveWarps();
+        return true;
     }
 
     public int getWarpCount() {

@@ -23,6 +23,9 @@ public class MessagesUtil {
     public static String warpNameNoColor;
     public static String warpUpdatedLocation;
     public static String warpCreated;
+    public static String warpNotFound;
+    public static String warpDeleted;
+    public static String warpDeleteFailed;
 
     public static void load(FileConfiguration cfg) {
         commandUsage = cfg.getString("command-usage", "Usage: %usage%");
@@ -45,5 +48,8 @@ public class MessagesUtil {
         warpNameNoColor = cfg.getString("warp.name.no-color", "&7Warp name cannot contain color codes.");
         warpUpdatedLocation = cfg.getString("warp.updated-location", "&7Warp &b%name% &7location updated to &b%location%&7.");
         warpCreated = cfg.getString("warp.created", "&7Warp &b%name% &7created at &b%location%&7.");
+        warpNotFound = cfg.getString("warp.not-found", "&7Warp &b%name% &7not found.");
+        warpDeleted = cfg.getString("warp.deleted", "&7Warp &b%name% &7deleted.");
+        warpDeleteFailed = cfg.getString("warp.delete-failed", "&7Failed to delete warp &b%name%&7.");
     }
 }

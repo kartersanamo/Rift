@@ -101,7 +101,7 @@ public class TeleportManager {
         return tasks.containsKey(player.getUniqueId());
     }
 
-    private static void removeTeleport(UUID uuid) {
+    public static void removeTeleport(UUID uuid) {
         playerTeleports.remove(uuid);
         locationTeleports.remove(uuid);
         tasks.remove(uuid);

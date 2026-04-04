@@ -24,6 +24,7 @@ teleport-cancelled:
 warp:
   updated-location: "&7Warp &b%name% &7location updated to &b%location%&7."
   created: "&7Warp &b%name% &7created at &b%location%&7."
+  not-found: "&7Warp &b%name% &7not found."
   name:
     size: "&7Warp name must be between &b%min% &7and &b%max% &7characters."
     no-color: "&7Warp name cannot contain color codes."

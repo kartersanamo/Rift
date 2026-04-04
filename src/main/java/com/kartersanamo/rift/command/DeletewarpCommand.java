@@ -1,8 +1,11 @@
 package com.kartersanamo.rift.command;
 
+import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.command.BaseCommand;
 import com.kartersanamo.rift.api.command.CommandContext;
 import com.kartersanamo.rift.api.command.annotations.PlayerOnly;
+import com.kartersanamo.rift.api.config.MessagesUtil;
+import com.kartersanamo.rift.api.util.PlaceholderUtil;
 import com.kartersanamo.rift.warp.Warp;
 import com.kartersanamo.rift.warp.WarpManager;
 import org.bukkit.entity.Player;
@@ -25,24 +28,50 @@ public class DeletewarpCommand extends BaseCommand {
     protected boolean onExecute(CommandContext context) {
         Player player = context.getPlayer();
 
-        // Ensured they entered a warp name
+        // Ensure they entered a warp name
         if (!context.hasArgs()) {
-            player.sendMessage("Provide a warp name!");
+            player.sendMessage(ChatFormat.info(
+                    PlaceholderUtil.replace(
+                            MessagesUtil.commandUsage,
+                            "%usage%", getUsage()
+                    )
+            ));
             return true;
         }
 
         String warpName = context.getArgs()[0];
 
+        // Validate warp exists
         Warp warp = warpManager.getWarp(warpName);
-
         if (warp == null) {
-            player.sendMessage("Warp not found!");
+            player.sendMessage(ChatFormat.error(
+                    PlaceholderUtil.replace(
+                            MessagesUtil.warpNotFound,
+                            "%name%", warpName
+                    )
+            ));
             return true;
         }
 
-        warpManager.deleteWarp(warpName);
+        // Delete the warp
+        boolean wasDeleted = warpManager.deleteWarp(warpName);
 
-        player.sendMessage("Warp " + warpName + " deleted!");
+        // This technically shouldn't happen, since we are validating first, but just in case
+        if (!wasDeleted) {
+            player.sendMessage(ChatFormat.error(
+                    PlaceholderUtil.replace(
+                            MessagesUtil.warpDeleteFailed,
+                            "%name%", warpName
+                    )
+            ));
+        }
+
+        player.sendMessage(ChatFormat.success(
+                PlaceholderUtil.replace(
+                        MessagesUtil.warpDeleted,
+                        "%name%", warpName
+                )
+        ));
 
         return true;
     }
