@@ -216,46 +216,36 @@ public class WarpManager {
     }
 
     public void sendInfo(Warp warp, Player player) {
-        player.sendMessage(warp.getName() + " " + warp.getDescription());
-//        player.sendMessage(ColorUtil.translate(MessagesUtil.warpInfoDivider));
-//        player.sendMessage(ColorUtil.translate(MessagesUtil.warpInfoTitle));
-//        player.sendMessage(ColorUtil.translate(MessagesUtil.warpInfoSpacer));
-//        List<String> lines = getInformationLines(warp);
-//        for (String line : lines) {
-//            player.sendMessage(ColorUtil.translate(line));
-//        }
-//        player.sendMessage(ColorUtil.translate(MessagesUtil.warpInfoDivider));
+        player.sendMessage(ColorUtil.translate(MessagesUtil.warpInfoDivider));
+        player.sendMessage(ColorUtil.translate(MessagesUtil.warpInfoTitle));
+        player.sendMessage(ColorUtil.translate(MessagesUtil.warpInfoSpacer));
+        List<String> lines = getInformationLines(warp);
+        for (String line : lines) {
+            player.sendMessage(ColorUtil.translate(line));
+        }
+        player.sendMessage(ColorUtil.translate(MessagesUtil.warpInfoDivider));
     }
 
-//    public List<String> getInformationLines(@org.jetbrains.annotations.UnknownNullability Warp home) {
-//        List<String> lines = new ArrayList<>();
-//
-//        lines.add(ColorUtil.translate(
-//                PlaceholderUtil.replace(MessagesUtil.homeInfoName, "%name%", home.getDisplayName())
-//        ));
-//        lines.add(ColorUtil.translate(
-//                PlaceholderUtil.replace(MessagesUtil.homeInfoCreated, "%time%", TimeUtil.formatUnix(home.getCreatedAt()))
-//        ));
-//        lines.add(ColorUtil.translate(
-//                PlaceholderUtil.replace(MessagesUtil.homeInfoLastUsed, "%time%", TimeUtil.formatUnix(home.getLastUsedAt()))
-//        ));
-//        lines.add(ColorUtil.translate(
-//                PlaceholderUtil.replace(MessagesUtil.homeInfoMaterial, "%material%", home.getMaterial().name())
-//        ));
-//        lines.add(ColorUtil.translate(
-//                PlaceholderUtil.replace(MessagesUtil.homeInfoLocation, "%location%", LocationUtil.format(home.getLocation()))
-//        ));
-//        if (home.getDescription().isEmpty()) {
-//            lines.add(ColorUtil.translate(MessagesUtil.homeInfoLoreNone));
-//        } else {
-//            lines.add(ColorUtil.translate(MessagesUtil.homeInfoLoreLabel));
-//            for (String loreLine : home.getLore()) {
-//                lines.add(ColorUtil.translate(
-//                        PlaceholderUtil.replace(MessagesUtil.homeInfoLoreEntry, "%line%", loreLine)
-//                ));
-//            }
-//        }
-//
-//        return lines;
-//    }
+    public List<String> getInformationLines(Warp warp) {
+        List<String> lines = new ArrayList<>();
+
+        lines.add(ColorUtil.translate( PlaceholderUtil.replace(MessagesUtil.warpInfoName, "%name%", warp.getName())));
+
+        if (warp.getDescription().isEmpty()) { lines.add(ColorUtil.translate(MessagesUtil.warpInfoDescriptionNone));
+        } else {
+            lines.add(ColorUtil.translate(MessagesUtil.warpInfoDescriptionLabel));
+            for (String descriptionLines : warp.getDescription()) {
+                lines.add(ColorUtil.translate( PlaceholderUtil.replace(MessagesUtil.warpInfoDescriptionEntry, "%line%", descriptionLines)));
+            }
+        }
+
+        lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoCategory, "%category%", warp.getCategory())));
+        lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoLocation, "%location%", LocationUtil.format(warp.getLocation()))));
+        lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoCreator, "%creator_name%", warp.getCreator().getName())));
+        lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoMaterial, "%material%", warp.getMaterial().name())));
+        lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoCreated, "%time%", TimeUtil.formatUnix(warp.getCreatedAt()))));
+        lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoUses, "%uses%", String.valueOf(warp.getUses()))));
+
+        return lines;
+    }
 }

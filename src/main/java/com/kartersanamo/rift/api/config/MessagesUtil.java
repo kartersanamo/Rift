@@ -27,6 +27,20 @@ public class MessagesUtil {
     public static String warpDeleted;
     public static String warpDeleteFailed;
 
+    public static String warpInfoDivider;
+    public static String warpInfoTitle;
+    public static String warpInfoSpacer;
+    public static String warpInfoName;
+    public static String warpInfoDescriptionNone;
+    public static String warpInfoDescriptionLabel;
+    public static String warpInfoDescriptionEntry;
+    public static String warpInfoCategory;
+    public static String warpInfoLocation;
+    public static String warpInfoCreator;
+    public static String warpInfoMaterial;
+    public static String warpInfoCreated;
+    public static String warpInfoUses;
+
     public static void load(FileConfiguration cfg) {
         commandUsage = cfg.getString("command-usage", "Usage: %usage%");
         commandPlayerOnly = cfg.getString("command-player-only", "This command can only be executed by players.");
@@ -51,5 +65,19 @@ public class MessagesUtil {
         warpNotFound = cfg.getString("warp.not-found", "&7Warp &b%name% &7not found.");
         warpDeleted = cfg.getString("warp.deleted", "&7Warp &b%name% &7deleted.");
         warpDeleteFailed = cfg.getString("warp.delete-failed", "&7Failed to delete warp &b%name%&7.");
+
+        warpInfoDivider = cfg.getString("warp.info.divider", "&m----------------------------------------");
+        warpInfoTitle = cfg.getString("warp.info.title", "&7Warp Information");
+        warpInfoSpacer = cfg.getString("warp.info.spacer", "&7");
+        warpInfoName = cfg.getString("warp.info.name", "&7Name: &b%name%");
+        warpInfoDescriptionNone = cfg.getString("warp.info.description-none", "&7Description: &8(none)");
+        warpInfoDescriptionLabel = cfg.getString("warp.info.description-label", "&7Description:");
+        warpInfoDescriptionEntry = cfg.getString("warp.info.description-entry", "&8- &7%line%");
+        warpInfoCategory = cfg.getString("warp.info.category", "&7Category: &b%category%");
+        warpInfoLocation = cfg.getString("warp.info.location", "&7Location: &b%location%");
+        warpInfoCreator = cfg.getString("warp.info.creator", "&7Creator: &b%creator_name%");
+        warpInfoMaterial = cfg.getString("warp.info.material", "&7Material: &b%material%");
+        warpInfoCreated = cfg.getString("warp.info.created", "&7Created: &b%time%");
+        warpInfoUses = cfg.getString("warp.info.uses", "&7Uses: &b%uses%");
     }
 }
