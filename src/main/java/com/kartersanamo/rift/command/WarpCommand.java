@@ -33,7 +33,6 @@ public class WarpCommand extends BaseCommand {
 
         String warpName = context.getArgs()[0];
 
-        // TODO: Validate warp name
 
         Warp warp = warpManager.getWarp(warpName);
 

@@ -144,6 +144,7 @@ public class WarpManager {
     }
 
     public Warp getWarp(String name) {
+        // TODO: Validate warp name
         Map<String, String> nameToId = getWarpNameToId();
         if (nameToId == null) {
             return null;

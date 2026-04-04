@@ -36,8 +36,6 @@ public class SetwarpCommand extends BaseCommand {
 
         String warpName = context.getArgs()[0];
 
-        // TODO: Validate warp name
-
         // Create warp
         String id = "warp_" + player.getUniqueId() + "_" + UUID.randomUUID();
         Warp warp = new Warp(

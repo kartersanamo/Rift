@@ -33,8 +33,6 @@ public class DeletewarpCommand extends BaseCommand {
 
         String warpName = context.getArgs()[0];
 
-        // TODO: Validate warp name
-
         Warp warp = warpManager.getWarp(warpName);
 
         if (warp == null) {
@@ -44,7 +42,7 @@ public class DeletewarpCommand extends BaseCommand {
 
         warpManager.deleteWarp(warpName);
 
-        player.sendMessage("Warp " + warpName + "deleted!");
+        player.sendMessage("Warp " + warpName + " deleted!");
 
         return true;
     }
