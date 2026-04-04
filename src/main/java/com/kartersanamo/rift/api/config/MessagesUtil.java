@@ -43,7 +43,7 @@ public class MessagesUtil {
 
         warpNameSize = cfg.getString("warp.name.size", "&7Warp name must be between &b%min% &7and &b%max% &7characters.");
         warpNameNoColor = cfg.getString("warp.name.no-color", "&7Warp name cannot contain color codes.");
-        warpUpdatedLocation = cfg.getString("warp.updated-location", "&7Warp location updated to &b%location%&7.");
-        warpCreated = cfg.getString("warp.created", "&7Warp &b%warp% &7created at &b%location%&7.");
+        warpUpdatedLocation = cfg.getString("warp.updated-location", "&7Warp &b%name% &7location updated to &b%location%&7.");
+        warpCreated = cfg.getString("warp.created", "&7Warp &b%name% &7created at &b%location%&7.");
     }
 }

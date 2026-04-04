@@ -76,7 +76,8 @@ public class SetwarpCommand extends BaseCommand {
             player.sendMessage(ChatFormat.info(
                     PlaceholderUtil.replace(
                         MessagesUtil.warpUpdatedLocation,
-                            "%location%", LocationUtil.format(newLocation)
+                            "%location%", LocationUtil.format(newLocation),
+                                         "%name%", warpName
                     )
             ));
             return true;
