@@ -1,0 +1,23 @@
+# Rift messages configuration
+
+command-usage: "Usage: %usage%"
+command-player-only: "This command can only be executed by players."
+command-no-permission: "You do not have permission to use this command."
+command-error: "An error occurred while executing this command."
+subcommand-no-permission: "You do not have permission to use this sub-command."
+messages-reloaded: "Config and messages reloaded."
+blank-line: " "
+chat-prefix-default: "&8&l[&b&lRIFT&8&l]"
+chat-prefix-success: "&8&l[&a&lRIFT&8&l]"
+chat-prefix-warning: "&8&l[&e&lRIFT&8&l]"
+
+teleport-delay:
+  countdown: "&7Teleporting in &b%seconds% &7seconds"
+
+teleport-complete:
+  success: "&7Teleported to &b%location%"
+  success-player: "&7Teleported to &b%player%"
+
+teleport-cancelled:
+  moved: "&7You moved, teleport cancelled."
+

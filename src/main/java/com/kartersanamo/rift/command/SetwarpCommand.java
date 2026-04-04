@@ -9,7 +9,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @PlayerOnly
@@ -31,7 +30,7 @@ public class SetwarpCommand extends BaseCommand {
         Player player = context.getPlayer();
 
         if (!context.hasArgs()) {
-            player.sendMessage("Provide a name for the warp!");
+            player.sendMessage("Provide a warp name!");
             return true;
         }
 
