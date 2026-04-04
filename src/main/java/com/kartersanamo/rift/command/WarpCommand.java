@@ -25,6 +25,7 @@ public class WarpCommand extends BaseCommand {
     protected boolean onExecute(CommandContext context) {
         Player player = context.getPlayer();
 
+        // Ensured they entered a warp name
         if (!context.hasArgs()) {
             player.sendMessage("Provide a warp name!");
             return true;
@@ -33,8 +34,6 @@ public class WarpCommand extends BaseCommand {
         String warpName = context.getArgs()[0];
 
         // TODO: Validate warp name
-
-        // Teleport to warp
 
         Warp warp = warpManager.getWarp(warpName);
 

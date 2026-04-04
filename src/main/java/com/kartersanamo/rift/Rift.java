@@ -6,6 +6,7 @@ import com.kartersanamo.rift.api.gui.GUIManager;
 import com.kartersanamo.rift.api.logging.CoreLogger;
 import com.kartersanamo.rift.api.logging.LogLevel;
 import com.kartersanamo.rift.api.config.MessagesUtil;
+import com.kartersanamo.rift.command.DeletewarpCommand;
 import com.kartersanamo.rift.command.SetwarpCommand;
 import com.kartersanamo.rift.command.WarpCommand;
 import com.kartersanamo.rift.warp.WarpManager;
@@ -56,6 +57,7 @@ public final class Rift extends JavaPlugin {
     private void registerCommands() {
         commandManager.registerCommand(new SetwarpCommand(warpManager));
         commandManager.registerCommand(new WarpCommand(warpManager));
+        commandManager.registerCommand(new DeletewarpCommand(warpManager));
     }
 
     private void registerListeners() {
