@@ -43,7 +43,7 @@ public class Warp {
                 ", category='" + category + '\'' +
                 ", location=" + location +
                 ", id='" + id + '\'' +
-                ", creator=" + creator.getUniqueId() +
+                ", creator=" + (creator != null ? creator.getUniqueId() : "null") +
                 ", material=" + material +
                 ", createdAt=" + createdAt +
                 ", uses=" + uses +
@@ -80,5 +80,9 @@ public class Warp {
 
     public int getUses() {
         return uses;
+    }
+
+    public Player getCreator() {
+        return creator;
     }
 }

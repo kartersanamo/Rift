@@ -1,5 +1,6 @@
 name: Rift
 version: '${project.version}'
+softdepend: [Multiverse-Core]
 
 main: com.kartersanamo.rift.Rift
 api-version: '1.21'

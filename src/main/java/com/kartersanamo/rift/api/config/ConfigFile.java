@@ -29,7 +29,12 @@ public class ConfigFile {
             file.getParentFile().mkdirs();
             saveResource();
         }
-        config = YamlConfiguration.loadConfiguration(file);
+        try {
+            config = YamlConfiguration.loadConfiguration(file);
+        } catch (Exception e) {
+            Rift.getLog().warning("Error loading config file " + fileName + ": " + e.getMessage());
+            config = new YamlConfiguration();
+        }
     }
 
     public void save() {

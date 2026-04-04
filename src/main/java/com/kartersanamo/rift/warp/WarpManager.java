@@ -1,5 +1,6 @@
 package com.kartersanamo.rift.warp;
 
+import com.kartersanamo.rift.Rift;
 import com.kartersanamo.rift.api.chat.ColorUtil;
 import com.kartersanamo.rift.api.config.ConfigFile;
 import com.kartersanamo.rift.api.config.ConfigUtil;
@@ -34,12 +35,14 @@ public class WarpManager {
     public void loadWarps() {
         ConfigFile file = getWarpFile();
         ConfigurationSection section = file.getConfig().getConfigurationSection("warps");
+        warps = new HashMap<>();
 
         if (section == null) {
-            warps = new HashMap<>();
+            Rift.getLog().info("Loaded 0 warps.");
             return;
         }
 
+        int loadedCount = 0;
         for (String warpId : section.getKeys(false)) {
             ConfigurationSection warpSection = section.getConfigurationSection(warpId);
             if (warpSection == null) continue;
@@ -49,7 +52,10 @@ public class WarpManager {
             String category = warpSection.getString("category", "default");
 
             Location location = warpSection.getLocation("location");
-            if (location == null) continue;
+            if (location == null) {
+                Rift.getLog().warning("Skipping warp '" + name + "' - location is invalid or world does not exist.");
+                continue;
+            }
 
             Material material;
             try {
@@ -63,11 +69,15 @@ public class WarpManager {
             long createdAt = warpSection.getLong("created-at");
             int uses = warpSection.getInt("uses", 0);
 
-            Player creator = plugin.getServer().getPlayer(
-                    UUID.fromString(
-                            warpSection.getString("creator")
-                    )
-            );
+            Player creator = null;
+            String creatorRaw = warpSection.getString("creator");
+            if (creatorRaw != null) {
+                try {
+                    creator = plugin.getServer().getPlayer(UUID.fromString(creatorRaw));
+                } catch (IllegalArgumentException ignored) {
+                    // Ignore malformed UUIDs and keep creator unset.
+                }
+            }
 
             Warp warp = new Warp(
                     name,
@@ -82,7 +92,10 @@ public class WarpManager {
             );
 
             warps.put(warpId, warp);
+            loadedCount++;
         }
+
+        Rift.getLog().info("Loaded " + loadedCount + " warps.");
     }
 
     public void unloadWarps() {
@@ -103,6 +116,7 @@ public class WarpManager {
             file.getConfig().set(path + ".material", warp.getMaterial().name());
             file.getConfig().set(path + ".created-at", warp.getCreatedAt());
             file.getConfig().set(path + ".uses", warp.getUses());
+            file.getConfig().set(path + ".creator", warp.getCreator() != null ? warp.getCreator().getUniqueId().toString() : null);
 
         }
 

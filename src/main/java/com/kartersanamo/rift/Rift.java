@@ -39,6 +39,9 @@ public final class Rift extends JavaPlugin {
         createConfigs();
 
         logger.info(getDescription().getName() + "v" + getDescription().getVersion() + " has been enabled!");
+
+        // Delay warp loading to allow all plugins to fully initialize (especially Multiverse-Core for custom worlds)
+        getServer().getScheduler().scheduleSyncDelayedTask(this, warpManager::loadWarps, 10L);
     }
 
     private void initLogger() {
