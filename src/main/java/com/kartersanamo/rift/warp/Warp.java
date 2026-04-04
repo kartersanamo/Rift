@@ -2,7 +2,6 @@ package com.kartersanamo.rift.warp;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.WorldCreator;
 import org.bukkit.entity.Player;
 
 import java.util.List;

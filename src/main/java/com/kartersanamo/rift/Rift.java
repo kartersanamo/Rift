@@ -6,6 +6,8 @@ import com.kartersanamo.rift.api.gui.GUIManager;
 import com.kartersanamo.rift.api.logging.CoreLogger;
 import com.kartersanamo.rift.api.logging.LogLevel;
 import com.kartersanamo.rift.api.config.MessagesUtil;
+import com.kartersanamo.rift.command.SetwarpCommand;
+import com.kartersanamo.rift.warp.WarpManager;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,6 +21,7 @@ public final class Rift extends JavaPlugin {
 
     private CommandManager commandManager;
     private GUIManager guiManager;
+    private WarpManager warpManager;
 
     private File messagesFile;
     private FileConfiguration messagesConfig;
@@ -45,11 +48,12 @@ public final class Rift extends JavaPlugin {
 
     private void registerManagers() {
         commandManager = new CommandManager(this);
+        warpManager = new WarpManager(this);
         guiManager = new GUIManager(this);
     }
 
     private void registerCommands() {
-        // commandManager.registerCommand(new TestCommand());
+        commandManager.registerCommand(new SetwarpCommand(warpManager));
     }
 
     private void registerListeners() {
