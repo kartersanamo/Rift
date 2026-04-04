@@ -96,6 +96,9 @@ public class TeleportManager {
 
     public static void removeTeleport(UUID uuid) {
         warpTeleports.remove(uuid);
+        if (tasks.containsKey(uuid)) {
+            tasks.get(uuid).cancel();
+        }
         tasks.remove(uuid);
     }
 }

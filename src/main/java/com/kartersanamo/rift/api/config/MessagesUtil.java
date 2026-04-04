@@ -8,7 +8,7 @@ public class MessagesUtil {
     public static String commandNoPermission;
     public static String commandError;
     public static String subCommandNoPermission;
-    public static String messagesReloaded;
+    public static String configsReloaded;
     public static String blankLine;
     public static String chatPrefixDefault;
     public static String chatPrefixSuccess;
@@ -33,13 +33,13 @@ public class MessagesUtil {
         commandNoPermission = cfg.getString("command-no-permission", "You do not have permission to use this command.");
         commandError = cfg.getString("command-error", "An error occurred while executing this command.");
         subCommandNoPermission = cfg.getString("subcommand-no-permission", "You do not have permission to use this sub-command.");
-        messagesReloaded = cfg.getString("messages-reloaded", "Config and messages reloaded.");
+        configsReloaded = cfg.getString("config-reloaded", "&7Config and messages reloaded.");
         blankLine = cfg.getString("blank-line", " ");
         chatPrefixDefault = cfg.getString("chat-prefix-default", "&8&l[&b&lH0M3&8&l]");
         chatPrefixSuccess = cfg.getString("chat-prefix-success", "&8&l[&a&lH0M3&8&l]");
         chatPrefixWarning = cfg.getString("chat-prefix-warning", "&8&l[&e&lH0M3&8&l]");
 
-        teleportCountdown = cfg.getString("teleport-delay.countdown", "&7Teleporting in &b%seconds% &7seconds");
+        teleportCountdown = cfg.getString("teleport-delay.countdown", "&7Teleporting in &b%seconds% &7seconds...");
         teleportSuccessLocation = cfg.getString("teleport-complete.success", "&7Teleported to &b%location%");
         teleportSuccessPlayer = cfg.getString("teleport-complete.success-player", "&7Teleported to &b%player%");
         teleportCancelledMoved = cfg.getString("teleport-cancelled.moved", "&7You moved, teleport cancelled.");

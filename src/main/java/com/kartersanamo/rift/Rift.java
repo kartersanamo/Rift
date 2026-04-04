@@ -1,13 +1,18 @@
 package com.kartersanamo.rift;
 
+import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.command.CommandManager;
+import com.kartersanamo.rift.api.command.SubCommand;
 import com.kartersanamo.rift.api.config.ConfigUtil;
 import com.kartersanamo.rift.api.gui.GUIManager;
 import com.kartersanamo.rift.api.logging.CoreLogger;
 import com.kartersanamo.rift.api.logging.LogLevel;
 import com.kartersanamo.rift.api.config.MessagesUtil;
+import com.kartersanamo.rift.api.util.PlaceholderUtil;
 import com.kartersanamo.rift.command.*;
+import com.kartersanamo.rift.listeners.TeleportMoveListener;
 import com.kartersanamo.rift.warp.WarpManager;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -40,8 +45,7 @@ public final class Rift extends JavaPlugin {
 
         logger.info(getDescription().getName() + "v" + getDescription().getVersion() + " has been enabled!");
 
-        // Delay warp loading to allow all plugins to fully initialize (especially Multiverse-Core for custom worlds)
-        getServer().getScheduler().scheduleSyncDelayedTask(this, warpManager::loadWarps, 10L);
+        warpManager.loadWarps();
     }
 
     private void initLogger() {
@@ -61,10 +65,31 @@ public final class Rift extends JavaPlugin {
         commandManager.registerCommand(new DeletewarpCommand(warpManager));
         commandManager.registerCommand(new WarpinfoCommand(warpManager));
         commandManager.registerCommand(new WarpsCommand(warpManager));
+        commandManager.registerCommand(new RiftCommand());
+        commandManager.registerSubCommand("rift", new SubCommand(
+                "reload",
+                "Reloads the plugin configs",
+                "/rift reload",
+                "rift.reload",
+                context -> {
+                    reloadAll();
+                    context.getSender().sendMessage(ChatFormat.success(
+                            PlaceholderUtil.replace(MessagesUtil.configsReloaded)
+                    ));
+                    return true;
+                }
+        ));
+    }
+
+    private void reloadAll() {
+        reloadConfig();
+        ConfigUtil.load(getConfig());
+        createConfigs();         // reloads messages.yml + MessagesUtil cache
+        warpManager.loadWarps(); // reloads warps.yml into memory
     }
 
     private void registerListeners() {
-        // Bukkit.getPluginManager().registerEvents(new TestListener(), this);
+        Bukkit.getPluginManager().registerEvents(new TeleportMoveListener(), this);
     }
 
     private void createConfigs() {

@@ -54,7 +54,7 @@ public class WarpCommand extends BaseCommand {
         }
 
         // Teleport player to warp
-        warp.teleport(player);
+        warp.queueTeleport(player);
 
         return true;
     }
