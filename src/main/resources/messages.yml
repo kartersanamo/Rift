@@ -21,3 +21,9 @@ teleport-complete:
 teleport-cancelled:
   moved: "&7You moved, teleport cancelled."
 
+warp:
+  updated-location: "&7Warp location updated to &b%location%&7."
+  created: "&7Warp &b%warp% &7created at &b%location%&7."
+  name:
+    size: "&7Warp name must be between &b%min% &7and &b%max% &7characters."
+    no-color: "&7Warp name cannot contain color codes."

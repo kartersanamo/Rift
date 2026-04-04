@@ -19,6 +19,11 @@ public class MessagesUtil {
     public static String teleportSuccessPlayer;
     public static String teleportCancelledMoved;
 
+    public static String warpNameSize;
+    public static String warpNameNoColor;
+    public static String warpUpdatedLocation;
+    public static String warpCreated;
+
     public static void load(FileConfiguration cfg) {
         commandUsage = cfg.getString("command-usage", "Usage: %usage%");
         commandPlayerOnly = cfg.getString("command-player-only", "This command can only be executed by players.");
@@ -35,5 +40,10 @@ public class MessagesUtil {
         teleportSuccessLocation = cfg.getString("teleport-complete.success", "&7Teleported to &b%location%");
         teleportSuccessPlayer = cfg.getString("teleport-complete.success-player", "&7Teleported to &b%player%");
         teleportCancelledMoved = cfg.getString("teleport-cancelled.moved", "&7You moved, teleport cancelled.");
+
+        warpNameSize = cfg.getString("warp.name.size", "&7Warp name must be between &b%min% &7and &b%max% &7characters.");
+        warpNameNoColor = cfg.getString("warp.name.no-color", "&7Warp name cannot contain color codes.");
+        warpUpdatedLocation = cfg.getString("warp.updated-location", "&7Warp location updated to &b%location%&7.");
+        warpCreated = cfg.getString("warp.created", "&7Warp &b%warp% &7created at &b%location%&7.");
     }
 }

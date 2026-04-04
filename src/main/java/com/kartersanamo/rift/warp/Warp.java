@@ -11,7 +11,7 @@ public class Warp {
     private final String name;
     private final List<String> description;
     private final String category;
-    private final Location location;
+    private Location location;
     private final String id;
     private final Player creator;
     private Material material;
@@ -84,5 +84,9 @@ public class Warp {
 
     public Player getCreator() {
         return creator;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 }

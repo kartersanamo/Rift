@@ -1,10 +1,16 @@
 package com.kartersanamo.rift.command;
 
+import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.command.BaseCommand;
 import com.kartersanamo.rift.api.command.CommandContext;
 import com.kartersanamo.rift.api.command.annotations.PlayerOnly;
+import com.kartersanamo.rift.api.config.ConfigUtil;
+import com.kartersanamo.rift.api.config.MessagesUtil;
+import com.kartersanamo.rift.api.util.LocationUtil;
+import com.kartersanamo.rift.api.util.PlaceholderUtil;
 import com.kartersanamo.rift.warp.Warp;
 import com.kartersanamo.rift.warp.WarpManager;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -29,12 +35,52 @@ public class SetwarpCommand extends BaseCommand {
     protected boolean onExecute(CommandContext context) {
         Player player = context.getPlayer();
 
+        // Ensure they entered a warp name
         if (!context.hasArgs()) {
-            player.sendMessage("Provide a warp name!");
+            player.sendMessage(ChatFormat.info(
+                    PlaceholderUtil.replace(
+                            MessagesUtil.commandUsage,
+                            "%usage%", getUsage()
+                    )
+            ));
             return true;
         }
 
         String warpName = context.getArgs()[0];
+
+        // Validate warp name
+        if (warpManager.isHomeNameCorrectSize(warpName)) {
+            player.sendMessage(ChatFormat.error(
+                    PlaceholderUtil.replace(
+                            MessagesUtil.warpNameSize,
+                            "%min%", String.valueOf(ConfigUtil.warpNameMinLength),
+                                         "%max%", String.valueOf(ConfigUtil.warpNameMaxLength)
+            )));
+            return true;
+        }
+        if (warpManager.warpNameHasColor(warpName)) {
+            player.sendMessage(ChatFormat.error(
+                    MessagesUtil.warpNameNoColor
+            ));
+            return true;
+        }
+
+        // Warp already exists, so just update the location
+        if (warpManager.exists(warpName)) {
+            Warp existingWarp = warpManager.getWarp(warpName);
+            Location newLocation = player.getLocation();
+
+            existingWarp.setLocation(newLocation);
+            warpManager.update(existingWarp);
+
+            player.sendMessage(ChatFormat.info(
+                    PlaceholderUtil.replace(
+                        MessagesUtil.warpUpdatedLocation,
+                            "%location%", LocationUtil.format(newLocation)
+                    )
+            ));
+            return true;
+        }
 
         // Create warp
         String id = "warp_" + player.getUniqueId() + "_" + UUID.randomUUID();
@@ -51,7 +97,13 @@ public class SetwarpCommand extends BaseCommand {
         );
         warpManager.addWarp(warp);
 
-        player.sendMessage("Warp '" + warpName + "' set successfully!");
+        player.sendMessage(ChatFormat.info(
+                PlaceholderUtil.replace(
+                        MessagesUtil.warpCreated,
+                        "%name%", warpName,
+                        "%location%", LocationUtil.format(player.getLocation())
+                )
+        ));
 
         return true;
     }
