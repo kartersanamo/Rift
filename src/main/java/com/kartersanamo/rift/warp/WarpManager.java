@@ -315,6 +315,18 @@ public class WarpManager {
         return false;
     }
 
+    public boolean hasNonDefaultCategoryWithWarps() {
+        for (Category category : categories.values()) {
+            if (category.getName().equalsIgnoreCase("default")) {
+                continue;
+            }
+            if (!getWarpsInCategory(category.getName()).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean categoryExists(String category) {
         String key = normalizeCategoryKey(category);
         return key != null && categories.containsKey(key);

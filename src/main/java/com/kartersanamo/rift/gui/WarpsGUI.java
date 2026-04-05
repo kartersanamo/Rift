@@ -50,7 +50,7 @@ public class WarpsGUI extends GUI {
 
     private static String buildTitle(WarpManager warpManager, String categoryFilter) {
         if (shouldShowCategoryMenu(warpManager, normalizeFilter(categoryFilter))) {
-            return ColorUtil.translate("&7Warp Categories");
+            return ColorUtil.translate("Warp Categories");
         }
 
         int count = warpManager.getWarpsInCategory(categoryFilter).size();
@@ -69,7 +69,8 @@ public class WarpsGUI extends GUI {
     }
 
     private static boolean shouldShowCategoryMenu(WarpManager warpManager, String categoryFilter) {
-        return (categoryFilter == null || categoryFilter.equalsIgnoreCase("all")) && warpManager.getWarpCount() > 0;
+        return (categoryFilter == null || categoryFilter.equalsIgnoreCase("all"))
+                && warpManager.hasNonDefaultCategoryWithWarps();
     }
 
     private static int calculateSize(WarpManager warpManager, String categoryFilter) {
