@@ -7,6 +7,7 @@ import com.kartersanamo.rift.api.config.ConfigUtil;
 import com.kartersanamo.rift.api.config.MessagesUtil;
 import com.kartersanamo.rift.api.gui.GUI;
 import com.kartersanamo.rift.api.item.ItemBuilder;
+import com.kartersanamo.rift.api.logging.AuditLogger;
 import com.kartersanamo.rift.api.util.LocationUtil;
 import com.kartersanamo.rift.api.util.PlaceholderUtil;
 import com.kartersanamo.rift.warp.Warp;
@@ -174,6 +175,9 @@ public class ManageWarpsGUI extends GUI {
     // Called when someone clicks on the item to change the name of a warp
     private void changeName(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
+        if (!ensureManagePermission(player)) {
+            return;
+        }
         player.closeInventory();
 
         Rift.getInstance().getChatInputManager().awaitInput(player,
@@ -207,6 +211,7 @@ public class ManageWarpsGUI extends GUI {
 
                     warp.setName(newName);
                     warpManager.update(warp);
+                    AuditLogger.action(player, "warp.manage.rename", "id=" + warp.getId() + " name=" + newName);
                     player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeNameSuccess));
                 },
                 () -> player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeNameCancelled))
@@ -216,6 +221,9 @@ public class ManageWarpsGUI extends GUI {
     // Called when someone clicks on the item to change the material of a warp
     private void changeMaterial(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
+        if (!ensureManagePermission(player)) {
+            return;
+        }
         player.closeInventory();
 
         Rift.getInstance().getChatInputManager().awaitInput(player,
@@ -241,6 +249,7 @@ public class ManageWarpsGUI extends GUI {
 
                     warp.setMaterial(newMaterial);
                     warpManager.update(warp);
+                    AuditLogger.action(player, "warp.manage.material", "id=" + warp.getId() + " material=" + newMaterial.name());
                     player.sendMessage(tr(PlaceholderUtil.replace(
                             MessagesUtil.manageWarpChangeMaterialSuccess,
                             "%value%", newMaterial.name()
@@ -253,6 +262,9 @@ public class ManageWarpsGUI extends GUI {
     // Called when someone clicks on the item to change the description of a warp
     private void changeDescription(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
+        if (!ensureManagePermission(player)) {
+            return;
+        }
         player.closeInventory();
 
         String prompt = PlaceholderUtil.replace(
@@ -282,6 +294,7 @@ public class ManageWarpsGUI extends GUI {
                         }
                         description.clear();
                         warpManager.update(warp);
+                        AuditLogger.action(player, "warp.manage.description.clear", "id=" + warp.getId());
                         player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionCleared));
                         return;
                     }
@@ -323,6 +336,7 @@ public class ManageWarpsGUI extends GUI {
                     description.clear();
                     description.addAll(newDescription);
                     warpManager.update(warp);
+                    AuditLogger.action(player, "warp.manage.description.update", "id=" + warp.getId() + " lines=" + newDescription.size());
                     player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionSuccess));
                 },
                 () -> player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionCancelled))
@@ -332,6 +346,9 @@ public class ManageWarpsGUI extends GUI {
     // Called when someone clicks on the item to change the location of a warp
     private void changeLocation(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
+        if (!ensureManagePermission(player)) {
+            return;
+        }
         var newLocation = player.getLocation().clone();
 
         if (warp.getLocation() != null && warp.getLocation().equals(newLocation)) {
@@ -341,6 +358,7 @@ public class ManageWarpsGUI extends GUI {
 
         warp.setLocation(newLocation);
         warpManager.update(warp);
+        AuditLogger.action(player, "warp.manage.location", "id=" + warp.getId() + " location=" + LocationUtil.format(newLocation));
         player.sendMessage(ChatFormat.info(
                 PlaceholderUtil.replace(
                         MessagesUtil.warpUpdatedLocation,
@@ -353,6 +371,9 @@ public class ManageWarpsGUI extends GUI {
     // Called when someone clicks on the item to change the category of a warp
     private void changeCategory(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
+        if (!ensureManagePermission(player)) {
+            return;
+        }
         player.closeInventory();
 
         Rift.getInstance().getChatInputManager().awaitInput(player,
@@ -373,6 +394,7 @@ public class ManageWarpsGUI extends GUI {
 
                     warp.setCategory(newCategory);
                     warpManager.update(warp);
+                    AuditLogger.action(player, "warp.manage.category", "id=" + warp.getId() + " category=" + newCategory);
                     player.sendMessage(tr(PlaceholderUtil.replace(
                             MessagesUtil.manageWarpChangeCategorySuccess,
                             "%value%", newCategory
@@ -385,6 +407,9 @@ public class ManageWarpsGUI extends GUI {
     // Called when someone clicks on the item to delete a warp
     private void deleteWarp(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
+        if (!ensureManagePermission(player)) {
+            return;
+        }
         player.closeInventory();
 
         String prompt = PlaceholderUtil.replace(
@@ -412,6 +437,7 @@ public class ManageWarpsGUI extends GUI {
                     player.sendMessage(ChatFormat.success(
                             PlaceholderUtil.replace(MessagesUtil.warpDeleted, "%name%", warp.getName())
                     ));
+                    AuditLogger.action(player, "warp.manage.delete", "id=" + warp.getId() + " name=" + warp.getName());
                     new WarpsGUI(warpManager).open(player);
                 },
                 () -> player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpDeleteCancelled))
@@ -445,5 +471,14 @@ public class ManageWarpsGUI extends GUI {
     private String tr(String message) {
         String translated = ColorUtil.translate(message);
         return translated != null ? translated : "";
+    }
+
+    private boolean ensureManagePermission(Player player) {
+        if (player.hasPermission("rift.warp.manage")) {
+            return true;
+        }
+        player.sendMessage(ChatFormat.error(MessagesUtil.commandNoPermission));
+        player.closeInventory();
+        return false;
     }
 }

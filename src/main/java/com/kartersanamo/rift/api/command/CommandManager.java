@@ -66,7 +66,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         if (args.length > 0) {
             List<SubCommand> subs = subCommands.get(commandName);
             if (subs != null) {
-                String subName = args[0].toLowerCase();
+                String subName = args[0].toLowerCase(Locale.ROOT);
                 for (SubCommand sub : subs) {
                     if (sub.matches(subName)) {
                         // Create context with remaining args

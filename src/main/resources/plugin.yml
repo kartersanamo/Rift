@@ -15,34 +15,52 @@ commands:
   setwarp:
     description: Set a warp.
     usage: /<command> <warp>
-    permission: rift.command
+    permission: rift.warp.set
     permission-message: You do not have permission to use this command.
   deletewarp:
     description: Delete a warp.
     usage: /<command> <warp>
     aliases:
       - delwarp
-    permission: rift.command
+    permission: rift.warp.delete
     permission-message: You do not have permission to use this command.
   warpinfo:
     description: Get information about a warp.
     usage: /<command> <warp>
-    permission: rift.command
+    permission: rift.warp.info
     permission-message: You do not have permission to use this command.
   warp:
     description: Teleport to a warp.
     usage: /<command> <warp>
-    permission: rift.command
+    permission: rift.warp.use
     permission-message: You do not have permission to use this command.
   warps:
     description: List all warps.
     usage: /<command>
-    permission: rift.command
+    permission: rift.warp.list
     permission-message: You do not have permission to use this command.
 
 permissions:
   rift.command:
     description: Access base Rift commands.
+    default: op
+  rift.warp.set:
+    description: Create or update warps with /setwarp.
+    default: op
+  rift.warp.use:
+    description: Teleport to warps with /warp.
+    default: true
+  rift.warp.list:
+    description: Open warp list with /warps.
+    default: true
+  rift.warp.info:
+    description: View warp details with /warpinfo.
+    default: true
+  rift.warp.delete:
+    description: Delete warps with /deletewarp.
+    default: op
+  rift.warp.manage:
+    description: Open and use the right-click warp management GUI.
     default: op
   rift.reload:
     description: Reload Rift configuration and messages.

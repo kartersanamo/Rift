@@ -3,6 +3,7 @@ package com.kartersanamo.rift.command;
 import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.command.BaseCommand;
 import com.kartersanamo.rift.api.command.CommandContext;
+import com.kartersanamo.rift.api.command.annotations.CommandPermission;
 import com.kartersanamo.rift.api.command.annotations.PlayerOnly;
 import com.kartersanamo.rift.api.config.MessagesUtil;
 import com.kartersanamo.rift.api.util.PlaceholderUtil;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @PlayerOnly
+@CommandPermission("rift.warp.info")
 public class WarpinfoCommand extends BaseCommand {
     private final WarpManager warpManager;
 

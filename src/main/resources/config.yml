@@ -30,3 +30,8 @@ warps:
   gui:
     min-size: 9
     max-rows: 6
+    category-filter-enabled: true
+
+admin:
+  backups:
+    keep-last: 10

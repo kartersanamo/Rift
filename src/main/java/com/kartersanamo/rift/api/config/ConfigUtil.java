@@ -28,6 +28,8 @@ public class ConfigUtil {
     public static int warpDescriptionMaxLength;
     public static int warpsGuiMinSize;
     public static int warpsGuiMaxRows;
+    public static boolean warpsGuiCategoryFilterEnabled;
+    public static int adminBackupKeepLast;
 
     public static void load(FileConfiguration cfg) {
         teleportDelayEnabled = cfg.getBoolean("teleport-delay.enabled", true);
@@ -51,6 +53,8 @@ public class ConfigUtil {
         warpDescriptionMaxLength = clamp(cfg.getInt("warp-description.max-length-per-line", 100), 20, 500);
         warpsGuiMinSize = normalizeGuiSize(cfg.getInt("warps.gui.min-size", 9), 9);
         warpsGuiMaxRows = clamp(cfg.getInt("warps.gui.max-rows", 6), 1, 6);
+        warpsGuiCategoryFilterEnabled = cfg.getBoolean("warps.gui.category-filter-enabled", true);
+        adminBackupKeepLast = clamp(cfg.getInt("admin.backups.keep-last", 10), 1, 200);
     }
 
     private static int normalizeGuiSize(int size, int fallback) {

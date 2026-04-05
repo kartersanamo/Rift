@@ -3,9 +3,11 @@ package com.kartersanamo.rift.gui;
 import com.kartersanamo.rift.Rift;
 import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.chat.ColorUtil;
+import com.kartersanamo.rift.api.config.ConfigUtil;
 import com.kartersanamo.rift.api.config.MessagesUtil;
 import com.kartersanamo.rift.api.gui.GUI;
 import com.kartersanamo.rift.api.item.ItemBuilder;
+import com.kartersanamo.rift.api.logging.AuditLogger;
 import com.kartersanamo.rift.warp.Warp;
 import com.kartersanamo.rift.warp.WarpManager;
 import org.bukkit.Material;
@@ -17,6 +19,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -87,6 +91,7 @@ public class AdminGUI extends GUI {
          setClickHandler(15, event -> {
              Player player = (Player) event.getWhoClicked();
              Rift.getInstance().reloadAll();
+             AuditLogger.action(player, "config.reload", "source=admin-gui");
              player.sendMessage(ChatFormat.success(ColorUtil.translate(MessagesUtil.configsReloaded)));
          });
 
@@ -125,12 +130,28 @@ public class AdminGUI extends GUI {
              File backupFile = new File(backupFolder, "warps_backup_" + timestamp + ".yml");
 
              Files.copy(warpsFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+             pruneOldBackups(backupFolder);
 
+             AuditLogger.action(player, "warps.backup.create", "file=" + backupFile.getName());
              player.sendMessage(ChatFormat.success(ColorUtil.translate("&7Backup created: &b" + backupFile.getName())));
           } catch (IOException e) {
               player.sendMessage(ChatFormat.error(ColorUtil.translate("&cFailed to create backup.")));
               Rift.getLog().warning("Failed to backup warps: " + e.getMessage());
           }
       }
+
+    private void pruneOldBackups(File backupFolder) {
+        File[] backupFiles = backupFolder.listFiles((dir, name) -> name.startsWith("warps_backup_") && name.endsWith(".yml"));
+        if (backupFiles == null || backupFiles.length <= ConfigUtil.adminBackupKeepLast) {
+            return;
+        }
+
+        Arrays.sort(backupFiles, Comparator.comparingLong(File::lastModified).reversed());
+        for (int i = ConfigUtil.adminBackupKeepLast; i < backupFiles.length; i++) {
+            if (!backupFiles[i].delete()) {
+                Rift.getLog().warning("Failed to prune old backup: " + backupFiles[i].getName());
+            }
+        }
+    }
 }
 

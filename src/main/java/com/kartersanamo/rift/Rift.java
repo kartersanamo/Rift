@@ -6,6 +6,7 @@ import com.kartersanamo.rift.api.command.CommandManager;
 import com.kartersanamo.rift.api.command.SubCommand;
 import com.kartersanamo.rift.api.config.ConfigUtil;
 import com.kartersanamo.rift.api.gui.GUIManager;
+import com.kartersanamo.rift.api.logging.AuditLogger;
 import com.kartersanamo.rift.api.logging.CoreLogger;
 import com.kartersanamo.rift.api.logging.LogLevel;
 import com.kartersanamo.rift.api.config.MessagesUtil;
@@ -18,7 +19,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 
-public final class Rift extends JavaPlugin {
+public class Rift extends JavaPlugin {
 
     private static Rift instance;
     private static CoreLogger logger;
@@ -81,6 +82,7 @@ public final class Rift extends JavaPlugin {
                         context.getSender().sendMessage(ChatFormat.error(MessagesUtil.commandPlayerOnly));
                         return true;
                     }
+                    AuditLogger.action(player, "admin.gui.open", "source=rift-command");
                     new com.kartersanamo.rift.gui.AdminGUI(warpManager).open(player);
                     return true;
                 }
