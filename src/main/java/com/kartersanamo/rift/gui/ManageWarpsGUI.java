@@ -1,6 +1,7 @@
 package com.kartersanamo.rift.gui;
 
 import com.kartersanamo.rift.Rift;
+import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.chat.ColorUtil;
 import com.kartersanamo.rift.api.config.MessagesUtil;
 import com.kartersanamo.rift.api.gui.GUI;
@@ -170,11 +171,27 @@ public class ManageWarpsGUI extends GUI {
         Rift.getInstance().getChatInputManager().awaitInput(player,
                 MessagesUtil.manageWarpChangeNamePrompt,
                 input -> {
-                    if (input.isBlank()) {
+                    String newName = input.trim();
+
+                    // Validate the new name
+                    if (newName.isBlank()) {
                         player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeNameInvalid));
                         return;
                     }
-                    warp.setName(input.trim());
+                    if (warp.getName().equals(newName)) {
+                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeNameSame));
+                        return;
+                    }
+
+                    WarpManager.WarpNameValidationResult validationResult = warpManager.validateWarpName(newName);
+                    if (validationResult != WarpManager.WarpNameValidationResult.VALID) {
+                        player.sendMessage(ChatFormat.error(
+                                warpManager.getWarpNameValidationMessage(validationResult)
+                        ));
+                        return;
+                    }
+
+                    warp.setName(newName);
                     warpManager.update(warp);
                     player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeNameSuccess));
                 },
@@ -184,37 +201,177 @@ public class ManageWarpsGUI extends GUI {
 
     // Called when someone clicks on the item to change the material of a warp
     private void changeMaterial(InventoryClickEvent event) {
-        event.getWhoClicked().sendMessage("TODO: Implement material selection flow.");
-        // TODO: Implement material selection flow.
+        Player player = (Player) event.getWhoClicked();
+        player.closeInventory();
+
+        Rift.getInstance().getChatInputManager().awaitInput(player,
+                MessagesUtil.manageWarpChangeMaterialPrompt,
+                input -> {
+                    String newMaterialName = input.trim().replace(' ', '_').toUpperCase();
+
+                    if (newMaterialName.isBlank()) {
+                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeMaterialInvalid));
+                        return;
+                    }
+
+                    Material newMaterial = Material.matchMaterial(newMaterialName);
+                    if (newMaterial == null || !newMaterial.isItem()) {
+                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeMaterialInvalid));
+                        return;
+                    }
+
+                    if (warp.getMaterial() == newMaterial) {
+                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeMaterialSame));
+                        return;
+                    }
+
+                    warp.setMaterial(newMaterial);
+                    warpManager.update(warp);
+                    player.sendMessage(Objects.requireNonNull(ColorUtil.translate(
+                            PlaceholderUtil.replace(
+                                    MessagesUtil.manageWarpChangeMaterialSuccess,
+                                    "%value%", newMaterial.name()
+                            )
+                    )));
+                },
+                () -> player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeMaterialCancelled))
+        );
     }
 
     // Called when someone clicks on the item to change the description of a warp
     private void changeDescription(InventoryClickEvent event) {
-        event.getWhoClicked().sendMessage("TODO: Implement description editing flow.");
-        // TODO: Implement description editing flow.
+        Player player = (Player) event.getWhoClicked();
+        player.closeInventory();
+
+        String prompt = PlaceholderUtil.replace(
+                MessagesUtil.manageWarpChangeDescriptionPrompt,
+                "%clear_keyword%", MessagesUtil.manageWarpChangeDescriptionClearKeyword
+        );
+
+        Rift.getInstance().getChatInputManager().awaitInput(player,
+                prompt,
+                input -> {
+                    String rawInput = input.trim();
+                    if (rawInput.isBlank()) {
+                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionInvalid));
+                        return;
+                    }
+
+                    List<String> description = warp.getDescription();
+                    if (description == null) {
+                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionInvalid));
+                        return;
+                    }
+
+                    if (rawInput.equalsIgnoreCase(MessagesUtil.manageWarpChangeDescriptionClearKeyword)) {
+                        if (description.isEmpty()) {
+                            player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionSame));
+                            return;
+                        }
+                        description.clear();
+                        warpManager.update(warp);
+                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionCleared));
+                        return;
+                    }
+
+                    List<String> newDescription = parseDescriptionLines(rawInput);
+                    if (newDescription.isEmpty()) {
+                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionInvalid));
+                        return;
+                    }
+
+                    if (description.equals(newDescription)) {
+                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionSame));
+                        return;
+                    }
+
+                    description.clear();
+                    description.addAll(newDescription);
+                    warpManager.update(warp);
+                    player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionSuccess));
+                },
+                () -> player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionCancelled))
+        );
     }
 
     // Called when someone clicks on the item to change the location of a warp
     private void changeLocation(InventoryClickEvent event) {
-        event.getWhoClicked().sendMessage("TODO: Implement location update flow.");
-        // TODO: Implement location update flow.
+        Player player = (Player) event.getWhoClicked();
+        var newLocation = player.getLocation().clone();
+
+        if (warp.getLocation() != null && warp.getLocation().equals(newLocation)) {
+            player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeLocationSame));
+            return;
+        }
+
+        warp.setLocation(newLocation);
+        warpManager.update(warp);
+        player.sendMessage(ChatFormat.info(
+                PlaceholderUtil.replace(
+                        MessagesUtil.warpUpdatedLocation,
+                        "%name%", warp.getName(),
+                        "%location%", LocationUtil.format(newLocation)
+                )
+        ));
     }
 
     // Called when someone clicks on the item to delete a warp
     private void deleteWarp(InventoryClickEvent event) {
-        event.getWhoClicked().sendMessage("TODO: Implement warp delete confirmation flow.");
-        // TODO: Implement warp delete confirmation flow.
+        Player player = (Player) event.getWhoClicked();
+        player.closeInventory();
+
+        String prompt = PlaceholderUtil.replace(
+                MessagesUtil.manageWarpDeletePrompt,
+                "%name%", warp.getName(),
+                "%keyword%", MessagesUtil.manageWarpDeleteConfirmKeyword
+        );
+
+        Rift.getInstance().getChatInputManager().awaitInput(player,
+                prompt,
+                input -> {
+                    if (!input.trim().equalsIgnoreCase(MessagesUtil.manageWarpDeleteConfirmKeyword)) {
+                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpDeleteConfirmInvalid));
+                        return;
+                    }
+
+                    boolean deleted = warpManager.deleteWarp(warp.getName());
+                    if (!deleted) {
+                        player.sendMessage(ChatFormat.error(
+                                PlaceholderUtil.replace(MessagesUtil.warpDeleteFailed, "%name%", warp.getName())
+                        ));
+                        return;
+                    }
+
+                    player.sendMessage(ChatFormat.success(
+                            PlaceholderUtil.replace(MessagesUtil.warpDeleted, "%name%", warp.getName())
+                    ));
+                    new WarpsGUI(warpManager).open(player);
+                },
+                () -> player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpDeleteCancelled))
+        );
     }
 
     // Called when someone clicks on the item to go to the previous GUI
     private void backButton(InventoryClickEvent event) {
-        event.getWhoClicked().sendMessage("TODO: Implement back navigation.");
-        // TODO: Implement back navigation.
+        Player player = (Player) event.getWhoClicked();
+        new WarpsGUI(warpManager).open(player);
     }
 
     // Called when someone clicks on the item to display the warp information
     private void warpInformation(InventoryClickEvent event) {
-        event.getWhoClicked().sendMessage("TODO: Implement detailed warp information action.");
-        // TODO: Implement detailed warp information action.
+        Player player = (Player) event.getWhoClicked();
+        player.closeInventory();
+        warpManager.sendInfo(warp, player);
+    }
+
+    private List<String> parseDescriptionLines(String rawInput) {
+        List<String> lines = new ArrayList<>();
+        for (String split : rawInput.split("\\|")) {
+            String cleaned = split.trim();
+            if (!cleaned.isEmpty()) {
+                lines.add(cleaned);
+            }
+        }
+        return lines;
     }
 }

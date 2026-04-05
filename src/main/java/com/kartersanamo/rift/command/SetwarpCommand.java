@@ -4,7 +4,6 @@ import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.command.BaseCommand;
 import com.kartersanamo.rift.api.command.CommandContext;
 import com.kartersanamo.rift.api.command.annotations.PlayerOnly;
-import com.kartersanamo.rift.api.config.ConfigUtil;
 import com.kartersanamo.rift.api.config.MessagesUtil;
 import com.kartersanamo.rift.api.util.LocationUtil;
 import com.kartersanamo.rift.api.util.PlaceholderUtil;
@@ -48,18 +47,10 @@ public class SetwarpCommand extends BaseCommand {
         String warpName = context.getArgs()[0];
 
         // Validate warp name
-        if (warpManager.isHomeNameCorrectSize(warpName)) {
+        WarpManager.WarpNameValidationResult validationResult = warpManager.validateWarpName(warpName);
+        if (validationResult != WarpManager.WarpNameValidationResult.VALID) {
             player.sendMessage(ChatFormat.error(
-                    PlaceholderUtil.replace(
-                            MessagesUtil.warpNameSize,
-                            "%min%", String.valueOf(ConfigUtil.warpNameMinLength),
-                                         "%max%", String.valueOf(ConfigUtil.warpNameMaxLength)
-            )));
-            return true;
-        }
-        if (warpManager.warpNameHasColor(warpName)) {
-            player.sendMessage(ChatFormat.error(
-                    MessagesUtil.warpNameNoColor
+                    warpManager.getWarpNameValidationMessage(validationResult)
             ));
             return true;
         }

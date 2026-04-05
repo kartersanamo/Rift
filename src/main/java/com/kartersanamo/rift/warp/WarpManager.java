@@ -19,6 +19,12 @@ import java.util.*;
 
 public class WarpManager {
 
+    public enum WarpNameValidationResult {
+        VALID,
+        INVALID_SIZE,
+        HAS_COLOR
+    }
+
     public static final int MAX_NUM_WARPS = 9;
     private Map<String, Warp> warps;// ID -> Warp
     private final Plugin plugin;
@@ -173,6 +179,28 @@ public class WarpManager {
     public boolean isHomeNameCorrectSize(String newName) {
         return (newName.length() < ConfigUtil.warpNameMinLength
                 || newName.length() > ConfigUtil.warpNameMaxLength);
+    }
+
+    public WarpNameValidationResult validateWarpName(String warpName) {
+        if (warpName == null || isHomeNameCorrectSize(warpName)) {
+            return WarpNameValidationResult.INVALID_SIZE;
+        }
+        if (warpNameHasColor(warpName)) {
+            return WarpNameValidationResult.HAS_COLOR;
+        }
+        return WarpNameValidationResult.VALID;
+    }
+
+    public String getWarpNameValidationMessage(WarpNameValidationResult validationResult) {
+        return switch (validationResult) {
+            case INVALID_SIZE -> PlaceholderUtil.replace(
+                    MessagesUtil.warpNameSize,
+                    "%min%", String.valueOf(ConfigUtil.warpNameMinLength),
+                    "%max%", String.valueOf(ConfigUtil.warpNameMaxLength)
+            );
+            case HAS_COLOR -> MessagesUtil.warpNameNoColor;
+            case VALID -> "";
+        };
     }
 
     private String getIdByName(String warpName) {
