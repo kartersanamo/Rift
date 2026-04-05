@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Warp {
 
-    private final String name;
+    private String name;
     private final List<String> description;
     private final String category;
     private Location location;
@@ -54,6 +54,7 @@ public class Warp {
                 '}';
     }
 
+    // Getters
     public String getId() {
         return id;
     }
@@ -90,7 +91,12 @@ public class Warp {
         return creator;
     }
 
+    // Setters
     public void setLocation(Location location) {
         this.location = location;
     }
+
+    public void setName(String name) { this.name = name; }
+
+    public void setMaterial(Material material) { this.material = material; }
 }

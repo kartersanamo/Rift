@@ -1,6 +1,7 @@
 package com.kartersanamo.rift;
 
 import com.kartersanamo.rift.api.chat.ChatFormat;
+import com.kartersanamo.rift.api.chat.ChatInputManager;
 import com.kartersanamo.rift.api.command.CommandManager;
 import com.kartersanamo.rift.api.command.SubCommand;
 import com.kartersanamo.rift.api.config.ConfigUtil;
@@ -25,6 +26,7 @@ public final class Rift extends JavaPlugin {
     private static CoreLogger logger;
 
     private CommandManager commandManager;
+    private ChatInputManager chatInputManager;
     private GUIManager guiManager;
     private WarpManager warpManager;
 
@@ -55,6 +57,7 @@ public final class Rift extends JavaPlugin {
 
     private void registerManagers() {
         commandManager = new CommandManager(this);
+        chatInputManager = new ChatInputManager(this);
         warpManager = new WarpManager(this);
         guiManager = new GUIManager(this);
     }
@@ -118,4 +121,6 @@ public final class Rift extends JavaPlugin {
     }
 
     public GUIManager getGuiManager() { return guiManager; }
+
+    public ChatInputManager getChatInputManager() { return chatInputManager; }
 }

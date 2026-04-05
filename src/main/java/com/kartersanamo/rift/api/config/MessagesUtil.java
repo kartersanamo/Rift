@@ -13,6 +13,8 @@ public class MessagesUtil {
     public static String chatPrefixDefault;
     public static String chatPrefixSuccess;
     public static String chatPrefixWarning;
+    public static String chatInputCancelHint;
+    public static String chatInputCancelKeyword;
 
     public static String teleportCountdown;
     public static String teleportSuccessLocation;
@@ -57,6 +59,10 @@ public class MessagesUtil {
     public static String manageWarpChangeNameTitle;
     public static String manageWarpChangeNameLine1;
     public static String manageWarpChangeNameLine2;
+    public static String manageWarpChangeNamePrompt;
+    public static String manageWarpChangeNameInvalid;
+    public static String manageWarpChangeNameSuccess;
+    public static String manageWarpChangeNameCancelled;
     public static String manageWarpCurrent;
     public static String manageWarpChangeMaterialTitle;
     public static String manageWarpChangeMaterialLine1;
@@ -91,6 +97,8 @@ public class MessagesUtil {
         chatPrefixDefault = cfg.getString("chat-prefix-default", "&8&l[&b&lH0M3&8&l]");
         chatPrefixSuccess = cfg.getString("chat-prefix-success", "&8&l[&a&lH0M3&8&l]");
         chatPrefixWarning = cfg.getString("chat-prefix-warning", "&8&l[&e&lH0M3&8&l]");
+        chatInputCancelHint = cfg.getString("chat-input.cancel-hint", "&7Type &b%keyword% &7to cancel.");
+        chatInputCancelKeyword = cfg.getString("chat-input.cancel-keyword", "cancel");
 
         teleportCountdown = cfg.getString("teleport-delay.countdown", "&7Teleporting in &b%seconds% &7seconds...");
         teleportSuccessLocation = cfg.getString("teleport-complete.success", "&7Teleported to &b%location%");
@@ -135,6 +143,10 @@ public class MessagesUtil {
         manageWarpChangeNameTitle = cfg.getString("warp.manage-gui.change-name.title", "&bChange Name");
         manageWarpChangeNameLine1 = cfg.getString("warp.manage-gui.change-name.line1", "&7Click to rename this warp.");
         manageWarpChangeNameLine2 = cfg.getString("warp.manage-gui.change-name.line2", "&7The new name must be unique.");
+        manageWarpChangeNamePrompt = cfg.getString("warp.manage-gui.change-name.prompt", "&7Type the new warp name in chat. Type &bcancel &7to abort.");
+        manageWarpChangeNameInvalid = cfg.getString("warp.manage-gui.change-name.invalid", "&cWarp name cannot be blank.");
+        manageWarpChangeNameSuccess = cfg.getString("warp.manage-gui.change-name.success", "&aWarp name updated successfully.");
+        manageWarpChangeNameCancelled = cfg.getString("warp.manage-gui.change-name.cancelled", "&eWarp rename cancelled.");
         manageWarpCurrent = cfg.getString("warp.manage-gui.current", "&7Current: &b%value%");
         manageWarpChangeMaterialTitle = cfg.getString("warp.manage-gui.change-material.title", "&bChange Material");
         manageWarpChangeMaterialLine1 = cfg.getString("warp.manage-gui.change-material.line1", "&7Click to change this warp icon.");

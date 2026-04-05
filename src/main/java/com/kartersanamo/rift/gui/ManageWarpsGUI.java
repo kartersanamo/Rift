@@ -1,5 +1,6 @@
 package com.kartersanamo.rift.gui;
 
+import com.kartersanamo.rift.Rift;
 import com.kartersanamo.rift.api.chat.ColorUtil;
 import com.kartersanamo.rift.api.config.MessagesUtil;
 import com.kartersanamo.rift.api.gui.GUI;
@@ -9,6 +10,7 @@ import com.kartersanamo.rift.api.util.PlaceholderUtil;
 import com.kartersanamo.rift.warp.Warp;
 import com.kartersanamo.rift.warp.WarpManager;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -160,36 +162,57 @@ public class ManageWarpsGUI extends GUI {
         setClickHandler(22, this::warpInformation);
     }
 
+    // Called when someone clicks on the item to change the name of a warp
     private void changeName(InventoryClickEvent event) {
-        event.getWhoClicked().sendMessage("TODO: Implement name editing flow.");
-        // TODO: Implement name editing flow.
+        Player player = (Player) event.getWhoClicked();
+        player.closeInventory();
+
+        Rift.getInstance().getChatInputManager().awaitInput(player,
+                MessagesUtil.manageWarpChangeNamePrompt,
+                input -> {
+                    if (input.isBlank()) {
+                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeNameInvalid));
+                        return;
+                    }
+                    warp.setName(input.trim());
+                    warpManager.update(warp);
+                    player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeNameSuccess));
+                },
+                () -> player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeNameCancelled))
+        );
     }
 
+    // Called when someone clicks on the item to change the material of a warp
     private void changeMaterial(InventoryClickEvent event) {
         event.getWhoClicked().sendMessage("TODO: Implement material selection flow.");
         // TODO: Implement material selection flow.
     }
 
+    // Called when someone clicks on the item to change the description of a warp
     private void changeDescription(InventoryClickEvent event) {
         event.getWhoClicked().sendMessage("TODO: Implement description editing flow.");
         // TODO: Implement description editing flow.
     }
 
+    // Called when someone clicks on the item to change the location of a warp
     private void changeLocation(InventoryClickEvent event) {
         event.getWhoClicked().sendMessage("TODO: Implement location update flow.");
         // TODO: Implement location update flow.
     }
 
+    // Called when someone clicks on the item to delete a warp
     private void deleteWarp(InventoryClickEvent event) {
         event.getWhoClicked().sendMessage("TODO: Implement warp delete confirmation flow.");
         // TODO: Implement warp delete confirmation flow.
     }
 
+    // Called when someone clicks on the item to go to the previous GUI
     private void backButton(InventoryClickEvent event) {
         event.getWhoClicked().sendMessage("TODO: Implement back navigation.");
         // TODO: Implement back navigation.
     }
 
+    // Called when someone clicks on the item to display the warp information
     private void warpInformation(InventoryClickEvent event) {
         event.getWhoClicked().sendMessage("TODO: Implement detailed warp information action.");
         // TODO: Implement detailed warp information action.
