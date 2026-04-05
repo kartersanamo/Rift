@@ -73,7 +73,7 @@ public final class Rift extends JavaPlugin {
                 "rift.reload",
                 context -> {
                     reloadAll();
-                    context.getSender().sendMessage(ChatFormat.success(
+                    context.getSender().sendMessage(ChatFormat.info(
                             PlaceholderUtil.replace(MessagesUtil.configsReloaded)
                     ));
                     return true;

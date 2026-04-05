@@ -20,6 +20,8 @@ commands:
   deletewarp:
     description: Delete a warp.
     usage: /<command> <warp>
+    aliases:
+      - delwarp
     permission: rift.command
     permission-message: You do not have permission to use this command.
   warpinfo:

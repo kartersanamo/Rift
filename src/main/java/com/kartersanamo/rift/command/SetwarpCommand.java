@@ -25,8 +25,7 @@ public class SetwarpCommand extends BaseCommand {
         super(
                 "setwarp",
                 "Sets a new warp at your location",
-                "/setwarp <name>",
-                "sw"
+                "/setwarp <name>"
         );
         this.warpManager = warpManager;
     }

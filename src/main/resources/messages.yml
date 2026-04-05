@@ -45,3 +45,16 @@ warp:
     material: "&7Material: &b%material%"
     created: "&7Created: &b%time%"
     uses: "&7Uses: &b%uses%"
+
+warps:
+  gui:
+    title: "&7Warps (&b%count%&7)"
+    empty:
+      name: "&cNo warps available"
+      lore: "&7There are no warps to display."
+    instruction:
+      teleport: "&7Left-click to teleport."
+      manage: "&7Right-click to manage."
+    home:
+      name: "&b%name%"
+

@@ -18,8 +18,7 @@ public class WarpinfoCommand extends BaseCommand {
         super(
                 "warpinfo",
                 "Shows info about a warp",
-                "/warpinfo <name>",
-                "wi"
+                "/warpinfo <name>"
         );
         this.warpManager = warpManager;
     }

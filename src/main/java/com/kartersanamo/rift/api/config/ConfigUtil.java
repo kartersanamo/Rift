@@ -24,6 +24,8 @@ public class ConfigUtil {
 
     public static int warpNameMinLength;
     public static int warpNameMaxLength;
+    public static int warpsGuiMinSize;
+    public static int warpsGuiMaxRows;
 
     public static void load(FileConfiguration cfg) {
         teleportDelayEnabled = cfg.getBoolean("teleport-delay.enabled", true);
@@ -43,6 +45,8 @@ public class ConfigUtil {
 
         warpNameMinLength = clamp(cfg.getInt("warp-name.min-length", 3), 1, 100);
         warpNameMaxLength = clamp(cfg.getInt("warp-name.max-length", 16), 1, 100);
+        warpsGuiMinSize = normalizeGuiSize(cfg.getInt("warps.gui.min-size", 9), 9);
+        warpsGuiMaxRows = clamp(cfg.getInt("warps.gui.max-rows", 6), 1, 6);
     }
 
     private static int normalizeGuiSize(int size, int fallback) {

@@ -22,3 +22,7 @@ warp-name:
   min-length: 3
   max-length: 16
 
+warps:
+  gui:
+    min-size: 9
+    max-rows: 6

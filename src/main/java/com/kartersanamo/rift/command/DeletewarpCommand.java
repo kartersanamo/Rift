@@ -19,7 +19,7 @@ public class DeletewarpCommand extends BaseCommand {
                 "deletewarp",
                 "Deletes a warp",
                 "/deletewarp <name>",
-                "dw"
+                "delwarp"
         );
         this.warpManager = warpManager;
     }
@@ -66,7 +66,7 @@ public class DeletewarpCommand extends BaseCommand {
             ));
         }
 
-        player.sendMessage(ChatFormat.success(
+        player.sendMessage(ChatFormat.info(
                 PlaceholderUtil.replace(
                         MessagesUtil.warpDeleted,
                         "%name%", warpName

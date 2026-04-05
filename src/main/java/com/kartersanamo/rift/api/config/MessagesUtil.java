@@ -41,6 +41,13 @@ public class MessagesUtil {
     public static String warpInfoCreated;
     public static String warpInfoUses;
 
+    public static String warpsGuiTitle;
+    public static String warpsGuiEmptyName;
+    public static String warpsGuiEmptyLore;
+    public static String warpsGuiInstructionTeleport;
+    public static String warpsGuiInstructionManage;
+    public static String warpsGuiHomeName;
+
     public static void load(FileConfiguration cfg) {
         commandUsage = cfg.getString("command-usage", "Usage: %usage%");
         commandPlayerOnly = cfg.getString("command-player-only", "This command can only be executed by players.");
@@ -79,5 +86,12 @@ public class MessagesUtil {
         warpInfoMaterial = cfg.getString("warp.info.material", "&7Material: &b%material%");
         warpInfoCreated = cfg.getString("warp.info.created", "&7Created: &b%time%");
         warpInfoUses = cfg.getString("warp.info.uses", "&7Uses: &b%uses%");
+
+        warpsGuiTitle = cfg.getString("warps.gui.title", "&7Warps (&b%count%&7)");
+        warpsGuiEmptyName = cfg.getString("warps.gui.empty.name", "&cNo warps available");
+        warpsGuiEmptyLore = cfg.getString("warps.gui.empty.lore", "&7There are no warps to display.");
+        warpsGuiInstructionTeleport = cfg.getString("warps.gui.instruction.teleport", "&7Left-click to teleport.");
+        warpsGuiInstructionManage = cfg.getString("warps.gui.instruction.manage", "&7Right-click to manage.");
+        warpsGuiHomeName = cfg.getString("warps.gui.home.name", "&b%name%");
     }
 }

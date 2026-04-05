@@ -18,8 +18,7 @@ public class WarpCommand extends BaseCommand {
         super(
                 "warp",
                 "Teleports the player to a warp",
-                "/warp <name>",
-                "w"
+                "/warp <name>"
         );
         this.warpManager = warpManager;
     }

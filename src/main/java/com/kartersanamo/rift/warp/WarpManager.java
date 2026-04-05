@@ -20,7 +20,7 @@ import java.util.*;
 public class WarpManager {
 
     public static final int MAX_NUM_WARPS = 9;
-    private Map<String, Warp> warps;// ID -> Home
+    private Map<String, Warp> warps;// ID -> Warp
     private final Plugin plugin;
 
     public WarpManager(Plugin plugin) {
