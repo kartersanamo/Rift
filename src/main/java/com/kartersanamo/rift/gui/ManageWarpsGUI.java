@@ -142,10 +142,10 @@ public class ManageWarpsGUI extends GUI {
         ItemStack deleteWarpItem = new ItemBuilder(Material.BARRIER)
                 .name(ColorUtil.translate(MessagesUtil.managWarpDeleteTitle))
                 .lore(List.of(
-                        ColorUtil.translate(MessagesUtil.manageWarpDeleteLine1),
-                        ColorUtil.translate(MessagesUtil.manageWarpDeleteLine2),
-                        ColorUtil.translate(MessagesUtil.manageWarpDeleteLine3),
-                        ColorUtil.translate(MessagesUtil.manageWarpDeleteLine4)
+                        tr(MessagesUtil.manageWarpDeleteLine1),
+                        tr(MessagesUtil.manageWarpDeleteLine2),
+                        tr(MessagesUtil.manageWarpDeleteLine3),
+                        tr(MessagesUtil.manageWarpDeleteLine4)
                 ))
                 .build();
         setItem(15, deleteWarpItem);
@@ -155,8 +155,8 @@ public class ManageWarpsGUI extends GUI {
         ItemStack backButtonItem = new ItemBuilder(Material.ARROW)
                 .name(ColorUtil.translate(MessagesUtil.manageWarpBackTitle))
                 .lore(List.of(
-                        ColorUtil.translate(MessagesUtil.manageWarpBackLine1),
-                        ColorUtil.translate(MessagesUtil.manageWarpBackLine2)
+                        tr(MessagesUtil.manageWarpBackLine1),
+                        tr(MessagesUtil.manageWarpBackLine2)
                 ))
                 .build();
         setItem(18, backButtonItem);
