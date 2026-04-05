@@ -68,6 +68,3 @@ permissions:
   rift.admin:
     description: Open the Rift admin panel.
     default: op
-  rift.category.manage:
-    description: Create/delete/list/assign warp categories with /rift category.
-    default: op

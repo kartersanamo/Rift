@@ -7,16 +7,18 @@ import com.kartersanamo.rift.api.config.MessagesUtil;
 import com.kartersanamo.rift.api.gui.GUI;
 import com.kartersanamo.rift.api.item.ItemBuilder;
 import com.kartersanamo.rift.api.util.PlaceholderUtil;
+import com.kartersanamo.rift.warp.Category;
 import com.kartersanamo.rift.warp.Warp;
 import com.kartersanamo.rift.warp.WarpManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class WarpsGUI extends GUI {
 
@@ -34,7 +36,8 @@ public class WarpsGUI extends GUI {
     }
 
     public WarpsGUI(WarpManager warpManager, String categoryFilter, Player viewer) {
-        super("warps_gui",
+        super(
+                "warps_gui",
                 buildTitle(warpManager, categoryFilter),
                 calculateSize(warpManager, categoryFilter)
         );
@@ -66,14 +69,13 @@ public class WarpsGUI extends GUI {
     }
 
     private static boolean shouldShowCategoryMenu(WarpManager warpManager, String categoryFilter) {
-        return (categoryFilter == null || categoryFilter.equalsIgnoreCase("all"))
-                && warpManager.getWarpCount() > 0;
+        return (categoryFilter == null || categoryFilter.equalsIgnoreCase("all")) && warpManager.getWarpCount() > 0;
     }
 
     private static int calculateSize(WarpManager warpManager, String categoryFilter) {
         boolean categoryMenu = shouldShowCategoryMenu(warpManager, normalizeFilter(categoryFilter));
         int itemCount = categoryMenu
-                ? Math.max(1, warpManager.getCategories().size())
+                ? Math.max(1, warpManager.getCategoriesForWarpsMenu().size())
                 : Math.max(1, warpManager.getWarpsInCategory(categoryFilter).size());
 
         int minRows = Math.max(3, Math.max(1, ConfigUtil.warpsGuiMinSize / 9));
@@ -90,16 +92,25 @@ public class WarpsGUI extends GUI {
 
         List<Warp> warps = warpManager.getWarpsInCategory(categoryFilter);
         if (warps.isEmpty()) {
-            setItem(4, new ItemBuilder(Material.BARRIER)
+            int centerSlot = getSize() / 2;
+            setItem(centerSlot, new ItemBuilder(Material.BARRIER)
                     .name(ColorUtil.translate(MessagesUtil.warpsGuiEmptyName))
                     .lore(ColorUtil.translate(MessagesUtil.warpsGuiEmptyLore))
                     .build());
             return;
         }
 
-        List<Integer> slots = getDistributedSlots(Math.min(warps.size(), getInnerCapacity()));
-        for (int i = 0; i < slots.size(); i++) {
-            Warp warp = warps.get(i);
+        Category category = warpManager.getCategory(categoryFilter);
+        List<Integer> fallbackSlots = getDistributedSlots(Math.min(warps.size(), getInnerCapacity()));
+        Set<Integer> used = new HashSet<>();
+        int fallbackIndex = 0;
+
+        for (Warp warp : warps) {
+            Integer preferred = category != null ? warpManager.getWarpSlotInCategory(category.getName(), warp.getId()) : null;
+            int slot = chooseSlot(preferred, fallbackSlots, used, fallbackIndex);
+            while (fallbackIndex < fallbackSlots.size() && used.contains(fallbackSlots.get(fallbackIndex))) {
+                fallbackIndex++;
+            }
 
             List<String> lore = new ArrayList<>();
             if (warp.getDescription() != null && !warp.getDescription().isEmpty()) {
@@ -109,51 +120,89 @@ public class WarpsGUI extends GUI {
             }
             lore.add(ColorUtil.translate(MessagesUtil.blankLine));
             lore.add(ColorUtil.translate(MessagesUtil.warpsGuiInstructionTeleport));
-            lore.add(ColorUtil.translate(MessagesUtil.blankLine));
-            lore.add(ColorUtil.translate("&8Category: &7" + warp.getCategory()));
             if (viewerCanManage) {
-                lore.add(ColorUtil.translate(MessagesUtil.blankLine));
                 lore.add(ColorUtil.translate(MessagesUtil.warpsGuiInstructionManage));
             }
 
-            int slot = slots.get(i);
             setItem(slot, new ItemBuilder(warp.getMaterial())
-                    .name(ColorUtil.translate(
-                            PlaceholderUtil.replace(MessagesUtil.warpsGuiHomeName, "%name%", warp.getName())
-                    ))
+                    .name(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpsGuiHomeName, "%name%", warp.getName())))
                     .lore(lore)
                     .build());
+
             String warpName = warp.getName();
             setClickHandler(slot, event -> handleWarpClick(event, warpName));
         }
     }
 
     private void buildCategoryMenu() {
-        List<String> categories = warpManager.getCategories();
+        List<Category> categories = warpManager.getCategoriesForWarpsMenu();
         if (categories.isEmpty()) {
             return;
         }
 
-        List<Integer> slots = getDistributedSlots(Math.min(categories.size(), getInnerCapacity()));
-        for (int i = 0; i < slots.size(); i++) {
-            String category = categories.get(i);
-            int count = warpManager.getWarpsInCategory(category).size();
-            int slot = slots.get(i);
+        List<Integer> fallbackSlots = getDistributedSlots(Math.min(categories.size(), getInnerCapacity()));
+        Set<Integer> used = new HashSet<>();
+        int fallbackIndex = 0;
 
-            setItem(slot, new ItemBuilder(Material.BOOKSHELF)
-                    .name(ColorUtil.translate("&b" + category))
-                    .lore(
-                            ColorUtil.translate("&7Warps: &b" + count),
-                            ColorUtil.translate(MessagesUtil.blankLine),
-                            ColorUtil.translate("&7Left-click to open this category")
-                    )
+        for (Category category : categories) {
+            int count = warpManager.getWarpsInCategory(category.getName()).size();
+            Integer preferred = warpManager.getCategorySlot(category.getName());
+            int slot = chooseSlot(preferred, fallbackSlots, used, fallbackIndex);
+            while (fallbackIndex < fallbackSlots.size() && used.contains(fallbackSlots.get(fallbackIndex))) {
+                fallbackIndex++;
+            }
+
+            List<String> lore = new ArrayList<>();
+            if (category.getDescription() != null && !category.getDescription().isEmpty()) {
+                for (String line : category.getDescription()) {
+                    lore.add(ColorUtil.translate(line));
+                }
+            }
+            lore.add(ColorUtil.translate(MessagesUtil.blankLine));
+            lore.add(ColorUtil.translate("&7Warps: &b" + count));
+            lore.add(ColorUtil.translate(MessagesUtil.blankLine));
+            lore.add(ColorUtil.translate("&7Left-click to open this category"));
+            if (viewerCanManage) {
+                lore.add(ColorUtil.translate("&7Right-click to manage this category"));
+            }
+
+            setItem(slot, new ItemBuilder(category.getMaterial())
+                    .name(ColorUtil.translate("&b" + category.getName()))
+                    .lore(lore)
                     .build());
 
-            setClickHandler(slot, event -> {
-                Player player = (Player) event.getWhoClicked();
-                new WarpsGUI(warpManager, category, player).open(player);
-            });
+            String categoryName = category.getName();
+            setClickHandler(slot, event -> handleCategoryClick(event, categoryName));
         }
+    }
+
+    private int chooseSlot(Integer preferred, List<Integer> fallbackSlots, Set<Integer> used, int fallbackIndex) {
+        if (preferred != null && isInnerSlot(preferred) && !used.contains(preferred)) {
+            used.add(preferred);
+            return preferred;
+        }
+
+        for (int i = fallbackIndex; i < fallbackSlots.size(); i++) {
+            int candidate = fallbackSlots.get(i);
+            if (!used.contains(candidate)) {
+                used.add(candidate);
+                return candidate;
+            }
+        }
+
+        // Should not happen due bounded item counts, but keep safe.
+        int emergency = fallbackSlots.isEmpty() ? 13 : fallbackSlots.get(0);
+        used.add(emergency);
+        return emergency;
+    }
+
+    private boolean isInnerSlot(int slot) {
+        if (slot < 0 || slot >= getSize()) {
+            return false;
+        }
+        int row = slot / 9;
+        int rows = getSize() / 9;
+        return row > 0 && row < rows - 1;
     }
 
     private int getInnerCapacity() {
@@ -177,7 +226,7 @@ public class WarpsGUI extends GUI {
             if (itemsInRow == 0) {
                 continue;
             }
-            int row = innerRowIndex + 1; // Skip top border row.
+            int row = innerRowIndex + 1;
             for (int column : distributedColumns(itemsInRow)) {
                 slots.add(row * 9 + column);
             }
@@ -208,6 +257,24 @@ public class WarpsGUI extends GUI {
         return columns;
     }
 
+    private void handleCategoryClick(InventoryClickEvent event, String categoryName) {
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+
+        ClickType clickType = event.getClick();
+        if (clickType == ClickType.RIGHT || clickType == ClickType.SHIFT_RIGHT) {
+            if (!player.hasPermission("rift.warp.manage")) {
+                player.sendMessage(ChatFormat.error(MessagesUtil.commandNoPermission));
+                return;
+            }
+            new CategoryManagerGUI(warpManager, categoryName).open(player);
+            return;
+        }
+
+        new WarpsGUI(warpManager, categoryName, player).open(player);
+    }
+
     private void handleWarpClick(InventoryClickEvent event, String warpName) {
         if (!(event.getWhoClicked() instanceof Player clicker)) {
             return;
@@ -215,7 +282,6 @@ public class WarpsGUI extends GUI {
 
         ClickType clickType = event.getClick();
 
-        // Right-click to manage
         if (clickType == ClickType.RIGHT || clickType == ClickType.SHIFT_RIGHT) {
             if (!clicker.hasPermission("rift.warp.manage")) {
                 clicker.sendMessage(ChatFormat.error(MessagesUtil.commandNoPermission));
@@ -231,12 +297,11 @@ public class WarpsGUI extends GUI {
                 clicker.closeInventory();
                 return;
             }
-            ManageWarpsGUI gui = new ManageWarpsGUI(warpManager, warp);
-            gui.open(clicker);
+            new ManageWarpsGUI(warpManager, warp).open(clicker);
+            return;
         }
 
-        // Left-click to tp
-        else if (clickType == ClickType.LEFT || clickType == ClickType.SHIFT_LEFT) {
+        if (clickType == ClickType.LEFT || clickType == ClickType.SHIFT_LEFT) {
             Warp warp = warpManager.getWarp(warpName);
             if (warp == null) {
                 clicker.sendMessage(ChatFormat.error(

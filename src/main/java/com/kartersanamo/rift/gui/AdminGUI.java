@@ -68,6 +68,7 @@ public class AdminGUI extends GUI {
              new WarpsGUI(warpManager, null, player).open(player);
          });
 
+
          // Plugin info item
          ItemStack infoItem = new ItemBuilder(Material.PAPER)
                  .name(ColorUtil.translate("&b&lPlugin Information"))
