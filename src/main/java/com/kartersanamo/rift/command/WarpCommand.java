@@ -10,6 +10,9 @@ import com.kartersanamo.rift.warp.Warp;
 import com.kartersanamo.rift.warp.WarpManager;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @PlayerOnly
 public class WarpCommand extends BaseCommand {
     private final WarpManager warpManager;
@@ -54,7 +57,27 @@ public class WarpCommand extends BaseCommand {
 
         // Teleport player to warp
         warp.queueTeleport(player);
+        warpManager.update(warp);
 
         return true;
     }
+
+     @Override
+     protected List<String> onTabComplete(CommandContext context) {
+         if (context.getArgs().length != 1) {
+             return new ArrayList<>();
+         }
+
+         List<String> completions = new ArrayList<>();
+         String partial = context.getArgs()[0].toLowerCase();
+
+         for (Warp warp : warpManager.getWarps().values()) {
+             if (warp.getName().toLowerCase().startsWith(partial)) {
+                 completions.add(warp.getName());
+             }
+         }
+
+         return completions;
+     }
 }
+

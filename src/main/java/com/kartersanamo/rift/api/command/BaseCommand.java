@@ -5,12 +5,12 @@ import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.command.annotations.CommandPermission;
 import com.kartersanamo.rift.api.command.annotations.PlayerOnly;
 import com.kartersanamo.rift.api.config.MessagesUtil;
-import com.kartersanamo.rift.api.util.PlaceholderUtil;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public abstract class BaseCommand {
 
@@ -47,18 +47,13 @@ public abstract class BaseCommand {
 
         // Check if player-only
         if (playerOnly && !(sender instanceof Player)) {
-            sender.sendMessage(PlaceholderUtil.replace(MessagesUtil.commandPlayerOnly));
+            sender.sendMessage(ChatFormat.error(MessagesUtil.commandPlayerOnly));
             return true;
         }
 
         // Check permission
         if (permission != null && !sender.hasPermission(permission)) {
-            if (sender instanceof Player) {
-                sender.sendMessage(ChatFormat.error(
-                        PlaceholderUtil.replace(MessagesUtil.commandNoPermission)
-                ));
-            }
-            sender.sendMessage(PlaceholderUtil.replace(MessagesUtil.commandNoPermission));
+            sender.sendMessage(ChatFormat.error(MessagesUtil.commandNoPermission));
             return true;
         }
 
@@ -66,9 +61,7 @@ public abstract class BaseCommand {
         try {
             return onExecute(context);
         } catch (Exception e) {
-            sender.sendMessage(ChatFormat.error(
-                    PlaceholderUtil.replace(MessagesUtil.commandError)
-            ));
+            sender.sendMessage(ChatFormat.error(MessagesUtil.commandError));
             Rift.getLog().severe("An error occurred while executing the command " + getName());
             e.printStackTrace();
             return true;
@@ -103,9 +96,9 @@ public abstract class BaseCommand {
 
     public boolean matches(String command) {
         if (command == null) {
-            return true;
+            return false;
         }
-        String lowerCommand = command.toLowerCase();
+        String lowerCommand = command.toLowerCase(Locale.ROOT);
         return name.equalsIgnoreCase(lowerCommand) || aliases.contains(lowerCommand);
     }
 }

@@ -22,6 +22,10 @@ warp-name:
   min-length: 3
   max-length: 16
 
+warp-description:
+  max-lines: 10
+  max-length-per-line: 100
+
 warps:
   gui:
     min-size: 9

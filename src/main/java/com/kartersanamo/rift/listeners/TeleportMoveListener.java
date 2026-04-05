@@ -12,7 +12,9 @@ public class TeleportMoveListener implements Listener {
     public void onPlayerMove(PlayerMoveEvent event) {
         Location from = event.getFrom();
         Location to = event.getTo();
-        assert to != null;
+        if (to == null) {
+            return;
+        }
         if (from.getBlockX() != to.getBlockX() ||
                 from.getBlockY() != to.getBlockY() ||
                 from.getBlockZ() != to.getBlockZ()) {

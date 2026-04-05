@@ -39,3 +39,14 @@ commands:
     usage: /<command>
     permission: rift.command
     permission-message: You do not have permission to use this command.
+
+permissions:
+  rift.command:
+    description: Access base Rift commands.
+    default: op
+  rift.reload:
+    description: Reload Rift configuration and messages.
+    default: op
+  rift.admin:
+    description: Open the Rift admin panel.
+    default: op

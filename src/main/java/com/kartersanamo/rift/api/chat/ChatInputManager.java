@@ -62,9 +62,8 @@ public class ChatInputManager implements Listener {
         if (message.equalsIgnoreCase(MessagesUtil.chatInputCancelKeyword)) {
             activeSessions.remove(uuid);
             if (session.cancelHandler() != null) {
-                session.cancelHandler().run();
+                plugin.getServer().getScheduler().runTask(plugin, session.cancelHandler());
             }
-            // player.sendMessage(ColorUtil.translate("&cCancelled."));
             return;
         }
 

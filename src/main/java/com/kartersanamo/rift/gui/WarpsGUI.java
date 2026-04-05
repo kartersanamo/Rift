@@ -1,5 +1,6 @@
 package com.kartersanamo.rift.gui;
 
+import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.chat.ColorUtil;
 import com.kartersanamo.rift.api.config.ConfigUtil;
 import com.kartersanamo.rift.api.config.MessagesUtil;
@@ -104,6 +105,13 @@ public class WarpsGUI extends GUI {
         // Right-click to manage
         if (clickType == ClickType.RIGHT || clickType == ClickType.SHIFT_RIGHT) {
             Warp warp = warpManager.getWarp(warpName);
+            if (warp == null) {
+                clicker.sendMessage(ChatFormat.error(
+                        PlaceholderUtil.replace(MessagesUtil.warpNotFound, "%name%", warpName)
+                ));
+                clicker.closeInventory();
+                return;
+            }
             ManageWarpsGUI gui = new ManageWarpsGUI(warpManager, warp);
             gui.open(clicker);
         }
@@ -111,6 +119,13 @@ public class WarpsGUI extends GUI {
         // Left-click to tp
         else if (clickType == ClickType.LEFT || clickType == ClickType.SHIFT_LEFT) {
             Warp warp = warpManager.getWarp(warpName);
+            if (warp == null) {
+                clicker.sendMessage(ChatFormat.error(
+                        PlaceholderUtil.replace(MessagesUtil.warpNotFound, "%name%", warpName)
+                ));
+                clicker.closeInventory();
+                return;
+            }
             clicker.closeInventory();
             warp.queueTeleport(clicker);
             warpManager.update(warp);

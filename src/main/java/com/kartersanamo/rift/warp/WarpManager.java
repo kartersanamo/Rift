@@ -25,7 +25,6 @@ public class WarpManager {
         HAS_COLOR
     }
 
-    public static final int MAX_NUM_WARPS = 9;
     private Map<String, Warp> warps;// ID -> Warp
     private final Plugin plugin;
 
@@ -54,7 +53,7 @@ public class WarpManager {
             if (warpSection == null) continue;
 
             String name = warpSection.getString("name", warpId);
-            List<String> description = warpSection.getStringList("description");
+            List<String> description = new ArrayList<>(warpSection.getStringList("description"));
             String category = warpSection.getString("category", "default");
 
             Location location = warpSection.getLocation("location");
@@ -63,12 +62,8 @@ public class WarpManager {
                 continue;
             }
 
-            Material material;
-            try {
-                material = Material.valueOf(
-                        warpSection.getString("material", "CHEST").toUpperCase()
-                );
-            } catch (IllegalArgumentException e) {
+            Material material = Material.matchMaterial(warpSection.getString("material", "CHEST"));
+            if (material == null || !material.isItem()) {
                 material = Material.CHEST;
             }
 
@@ -134,26 +129,6 @@ public class WarpManager {
         saveWarps();
     }
 
-    private ConfigurationSection getSection() {
-        ConfigFile cf = getWarpFile();
-        return cf.getConfig().getConfigurationSection("warps");
-    }
-
-    public Map<String, String> getWarpNameToId() {
-        Map<String, String> warpNameToId = new HashMap<>();
-        ConfigurationSection section = getSection();
-        if (section == null) {
-            return null;
-        }
-
-        for (String id : section.getKeys(false)) {
-            String name = (String) section.get(id + ".name");
-            if (name != null) {
-                warpNameToId.put(name, id);
-            }
-        }
-        return warpNameToId;
-    }
 
     public boolean exists(String name) {
         return getWarp(name) != null;
@@ -164,16 +139,15 @@ public class WarpManager {
     }
 
     public Warp getWarp(String name) {
-        Map<String, String> nameToId = getWarpNameToId();
-        if (nameToId == null) {
+        if (name == null || name.isBlank()) {
             return null;
         }
-        String id = nameToId.get(name);
-        return warps.get(id);
-    }
-
-    private Map<String, String> getNameToId(UUID uuid) {
-        return getWarpNameToId();
+        for (Warp warp : warps.values()) {
+            if (warp.getName().equalsIgnoreCase(name)) {
+                return warp;
+            }
+        }
+        return null;
     }
 
     public boolean isHomeNameCorrectSize(String newName) {
@@ -204,17 +178,12 @@ public class WarpManager {
     }
 
     private String getIdByName(String warpName) {
-        ConfigurationSection section = getSection();
-        if (section == null) return null;
-
-        for (String id : section.getKeys(false)) {
-            String name = section.getString(id + ".name");
-            if (name != null && name.equalsIgnoreCase(warpName)) {
-                return id;
+        for (Warp warp : warps.values()) {
+            if (warp.getName().equalsIgnoreCase(warpName)) {
+                return warp.getId();
             }
         }
-
-        return null; // Not found
+        return null;
     }
 
     public boolean deleteWarp(String homeName) {
@@ -232,8 +201,7 @@ public class WarpManager {
     }
 
     public void update(Warp warp) {
-        String normalizedId = warp.getId().toLowerCase().trim();
-        warps.put(normalizedId, warp);
+        warps.put(warp.getId(), warp);
         saveWarps();
     }
 
@@ -244,6 +212,10 @@ public class WarpManager {
     }
 
     public void sendInfo(Warp warp, Player player) {
+        if (warp == null || player == null) {
+            return;
+        }
+
         player.sendMessage(ColorUtil.translate(MessagesUtil.warpInfoDivider));
         player.sendMessage(ColorUtil.translate(MessagesUtil.warpInfoTitle));
         player.sendMessage(ColorUtil.translate(MessagesUtil.warpInfoSpacer));
@@ -256,18 +228,23 @@ public class WarpManager {
 
     public List<String> getInformationLines(Warp warp) {
         List<String> lines = new ArrayList<>();
+        if (warp == null) {
+            return lines;
+        }
+
         List<String> description = warp.getDescription();
         String creatorName = warp.getCreator() != null
                 ? warp.getCreator().getName()
                 : MessagesUtil.warpInfoCreatorUnknown;
 
-        lines.add(ColorUtil.translate( PlaceholderUtil.replace(MessagesUtil.warpInfoName, "%name%", warp.getName())));
+        lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoName, "%name%", warp.getName())));
 
-        if (description == null || description.isEmpty()) { lines.add(ColorUtil.translate(MessagesUtil.warpInfoDescriptionNone));
+        if (description == null || description.isEmpty()) {
+            lines.add(ColorUtil.translate(MessagesUtil.warpInfoDescriptionNone));
         } else {
             lines.add(ColorUtil.translate(MessagesUtil.warpInfoDescriptionLabel));
-            for (String descriptionLines : description) {
-                lines.add(ColorUtil.translate( PlaceholderUtil.replace(MessagesUtil.warpInfoDescriptionEntry, "%line%", descriptionLines)));
+            for (String descriptionLine : description) {
+                lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoDescriptionEntry, "%line%", descriptionLine)));
             }
         }
 

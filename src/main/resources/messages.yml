@@ -26,6 +26,9 @@ teleport-complete:
 teleport-cancelled:
   moved: "&7You moved, teleport cancelled."
 
+teleport:
+  invalid-target: "&7That warp location is invalid right now."
+
 warp:
   updated-location: "&7Warp &b%name% &7location updated to &b%location%&7."
   created: "&7Warp &b%name% &7created at &b%location%&7."
@@ -66,6 +69,7 @@ warp:
       same: "&eWarp name is unchanged."
       success: "&aWarp name updated successfully."
       cancelled: "&eWarp rename cancelled."
+      duplicate: "&cThat warp name is already taken. Please choose another."
     current: "&7Current: &b%value%"
     change-material:
       title: "&bChange Material"
@@ -92,6 +96,15 @@ warp:
       line1: "&7Click to set this warp location"
       line2: "&7to your current position."
       same: "&eWarp location is unchanged."
+    change-category:
+      title: "&bChange Category"
+      line1: "&7Click to change the category."
+      line2: "&7Categories help organize warps."
+      prompt: "&7Type a new category name in chat."
+      invalid: "&cCategory cannot be blank."
+      same: "&eWarp category is unchanged."
+      success: "&aWarp category updated to &b%value%&a."
+      cancelled: "&eWarp category change cancelled."
     delete:
       title: "&cDelete Warp"
       line1: "&7Click to delete this warp."

@@ -10,7 +10,7 @@ public class Warp {
 
     private String name;
     private final List<String> description;
-    private final String category;
+    private String category;
     private Location location;
     private final String id;
     private final Player creator;
@@ -96,7 +96,9 @@ public class Warp {
         this.location = location;
     }
 
-    public void setName(String name) { this.name = name; }
+     public void setName(String name) { this.name = name; }
 
-    public void setMaterial(Material material) { this.material = material; }
-}
+     public void setMaterial(Material material) { this.material = material; }
+
+     public void setCategory(String category) { this.category = category; }
+ }

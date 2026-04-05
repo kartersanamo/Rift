@@ -9,12 +9,10 @@ import com.kartersanamo.rift.api.gui.GUIManager;
 import com.kartersanamo.rift.api.logging.CoreLogger;
 import com.kartersanamo.rift.api.logging.LogLevel;
 import com.kartersanamo.rift.api.config.MessagesUtil;
-import com.kartersanamo.rift.api.util.PlaceholderUtil;
 import com.kartersanamo.rift.command.*;
 import com.kartersanamo.rift.listeners.TeleportMoveListener;
 import com.kartersanamo.rift.warp.WarpManager;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -29,9 +27,6 @@ public final class Rift extends JavaPlugin {
     private ChatInputManager chatInputManager;
     private GUIManager guiManager;
     private WarpManager warpManager;
-
-    private File messagesFile;
-    private FileConfiguration messagesConfig;
 
     @Override
     public void onEnable() {
@@ -74,41 +69,54 @@ public final class Rift extends JavaPlugin {
                 "Reloads the plugin configs",
                 "/rift reload",
                 "rift.reload",
+                ReloadCommand::execute
+        ));
+        commandManager.registerSubCommand("rift", new SubCommand(
+                "admin",
+                "Open the Rift admin panel",
+                "/rift admin",
+                "rift.admin",
                 context -> {
-                    reloadAll();
-                    context.getSender().sendMessage(ChatFormat.info(
-                            PlaceholderUtil.replace(MessagesUtil.configsReloaded)
-                    ));
+                    if (!(context.getSender() instanceof org.bukkit.entity.Player player)) {
+                        context.getSender().sendMessage(ChatFormat.error(MessagesUtil.commandPlayerOnly));
+                        return true;
+                    }
+                    new com.kartersanamo.rift.gui.AdminGUI(warpManager).open(player);
                     return true;
                 }
         ));
     }
 
-    private void reloadAll() {
-        reloadConfig();
-        ConfigUtil.load(getConfig());
-        createConfigs();         // reloads messages.yml + MessagesUtil cache
-        warpManager.loadWarps(); // reloads warps.yml into memory
-    }
+     public void reloadAll() {
+         reloadConfig();
+         ConfigUtil.load(getConfig());
+         createConfigs();         // reloads messages.yml + MessagesUtil cache
+         warpManager.loadWarps(); // reloads warps.yml into memory
+     }
 
     private void registerListeners() {
         Bukkit.getPluginManager().registerEvents(new TeleportMoveListener(), this);
     }
 
     private void createConfigs() {
-        messagesFile = new File(getDataFolder(), "messages.yml");
+        File messagesFile = new File(getDataFolder(), "messages.yml");
         if (!messagesFile.exists()) {
-            messagesFile.getParentFile().mkdirs();
+            File parent = messagesFile.getParentFile();
+            if (parent != null && !parent.exists() && !parent.mkdirs()) {
+                logger.warning("Could not create plugin data folder: " + parent.getAbsolutePath());
+            }
             saveResource("messages.yml", false);
         }
 
-        messagesConfig = YamlConfiguration.loadConfiguration(messagesFile);
-        MessagesUtil.load(messagesConfig);
+        MessagesUtil.load(YamlConfiguration.loadConfiguration(messagesFile));
         logger.info("Messages cache loaded.");
     }
 
     @Override
     public void onDisable() {
+        if (warpManager != null) {
+            warpManager.unloadWarps();
+        }
         logger.close();
     }
 

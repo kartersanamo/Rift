@@ -1,7 +1,7 @@
 package com.kartersanamo.rift.api.command;
 
+import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.config.MessagesUtil;
-import com.kartersanamo.rift.api.util.PlaceholderUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -21,24 +21,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         this.plugin = plugin;
         this.commands = new HashMap<>();
         this.subCommands = new HashMap<>();
-    }
-
-    public static void initialize(Plugin plugin) {
-        if (instance == null) {
-            instance = new CommandManager(plugin);
-        }
+        instance = this;
     }
 
     public static CommandManager getInstance() {
         return instance;
-    }
-
-    public static void shutdown() {
-        if (instance != null) {
-            instance.commands.clear();
-            instance.subCommands.clear();
-            instance = null;
-        }
     }
 
     public void registerCommand(BaseCommand command) {
@@ -64,8 +51,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        String commandName = command.getName().toLowerCase();
+    public boolean onCommand(CommandSender sender,
+                             Command command,
+                             String label,
+                             String[] args) {
+        String commandName = command.getName().toLowerCase(Locale.ROOT);
         BaseCommand coreCommand = commands.get(commandName);
 
         if (coreCommand == null) {
@@ -85,7 +75,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
 
                         // Check permission
                         if (sub.getPermission() != null && !sender.hasPermission(sub.getPermission())) {
-                            sender.sendMessage(PlaceholderUtil.replace(MessagesUtil.subCommandNoPermission));
+                            sender.sendMessage(ChatFormat.error(MessagesUtil.subCommandNoPermission));
                             return true;
                         }
 
@@ -100,8 +90,11 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        String commandName = command.getName().toLowerCase();
+    public List<String> onTabComplete(CommandSender sender,
+                                      Command command,
+                                      String label,
+                                      String[] args) {
+        String commandName = command.getName().toLowerCase(Locale.ROOT);
         BaseCommand coreCommand = commands.get(commandName);
 
         if (coreCommand == null) {
@@ -113,14 +106,14 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             List<SubCommand> subs = subCommands.get(commandName);
             if (subs != null) {
                 List<String> completions = new ArrayList<>();
-                String partial = args[0].toLowerCase();
+                String partial = args[0].toLowerCase(Locale.ROOT);
                 for (SubCommand sub : subs) {
                     if (sub.getPermission() == null || sender.hasPermission(sub.getPermission())) {
-                        if (sub.getName().toLowerCase().startsWith(partial)) {
+                        if (sub.getName().toLowerCase(Locale.ROOT).startsWith(partial)) {
                             completions.add(sub.getName());
                         }
                         for (String alias : sub.getAliases()) {
-                            if (alias.toLowerCase().startsWith(partial)) {
+                            if (alias.toLowerCase(Locale.ROOT).startsWith(partial)) {
                                 completions.add(alias);
                             }
                         }
@@ -134,11 +127,4 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         return coreCommand.tabComplete(context);
     }
 
-    public BaseCommand getCommand(String name) {
-        return commands.get(name.toLowerCase());
-    }
-
-    public Collection<BaseCommand> getCommands() {
-        return new ArrayList<>(commands.values());
-    }
 }

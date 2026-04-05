@@ -20,6 +20,7 @@ public class MessagesUtil {
     public static String teleportSuccessLocation;
     public static String teleportSuccessPlayer;
     public static String teleportCancelledMoved;
+    public static String teleportInvalidTarget;
 
     public static String warpNameSize;
     public static String warpNameNoColor;
@@ -83,6 +84,18 @@ public class MessagesUtil {
     public static String manageWarpChangeDescriptionSuccess;
     public static String manageWarpChangeDescriptionCleared;
     public static String manageWarpChangeDescriptionCancelled;
+    public static String manageWarpChangeDescriptionLinesTooMany;
+    public static String manageWarpChangeDescriptionLineTooLong;
+    public static String manageWarpChangeDescriptionAlreadyEmpty;
+    public static String manageWarpChangeCategoryTitle;
+    public static String manageWarpChangeCategoryLine1;
+    public static String manageWarpChangeCategoryLine2;
+    public static String manageWarpChangeCategoryPrompt;
+    public static String manageWarpChangeCategoryInvalid;
+    public static String manageWarpChangeCategorySame;
+    public static String manageWarpChangeCategorySuccess;
+    public static String manageWarpChangeCategoryCancelled;
+    public static String manageWarpChangeNameDuplicate;
     public static String manageWarpCurrentLabel;
     public static String manageWarpDescriptionNone;
     public static String manageWarpDescriptionEntry;
@@ -112,9 +125,9 @@ public class MessagesUtil {
         subCommandNoPermission = cfg.getString("subcommand-no-permission", "You do not have permission to use this sub-command.");
         configsReloaded = cfg.getString("config-reloaded", "&7Config and messages reloaded.");
         blankLine = cfg.getString("blank-line", " ");
-        chatPrefixDefault = cfg.getString("chat-prefix-default", "&8&l[&b&lH0M3&8&l]");
-        chatPrefixSuccess = cfg.getString("chat-prefix-success", "&8&l[&a&lH0M3&8&l]");
-        chatPrefixWarning = cfg.getString("chat-prefix-warning", "&8&l[&e&lH0M3&8&l]");
+        chatPrefixDefault = cfg.getString("chat-prefix-default", "&8&l[&b&lRIFT&8&l]");
+        chatPrefixSuccess = cfg.getString("chat-prefix-success", "&8&l[&a&lRIFT&8&l]");
+        chatPrefixWarning = cfg.getString("chat-prefix-warning", "&8&l[&e&lRIFT&8&l]");
         chatInputCancelHint = cfg.getString("chat-input.cancel-hint", "&7Type &b%keyword% &7to cancel.");
         chatInputCancelKeyword = cfg.getString("chat-input.cancel-keyword", "cancel");
 
@@ -122,6 +135,7 @@ public class MessagesUtil {
         teleportSuccessLocation = cfg.getString("teleport-complete.success", "&7Teleported to &b%location%");
         teleportSuccessPlayer = cfg.getString("teleport-complete.success-player", "&7Teleported to &b%player%");
         teleportCancelledMoved = cfg.getString("teleport-cancelled.moved", "&7You moved, teleport cancelled.");
+        teleportInvalidTarget = cfg.getString("teleport.invalid-target", "&7That warp location is invalid right now.");
 
         warpNameSize = cfg.getString("warp.name.size", "&7Warp name must be between &b%min% &7and &b%max% &7characters.");
         warpNameNoColor = cfg.getString("warp.name.no-color", "&7Warp name cannot contain color codes.");
@@ -185,22 +199,18 @@ public class MessagesUtil {
         manageWarpChangeDescriptionSuccess = cfg.getString("warp.manage-gui.change-description.success", "&aWarp description updated.");
         manageWarpChangeDescriptionCleared = cfg.getString("warp.manage-gui.change-description.cleared", "&aWarp description cleared.");
         manageWarpChangeDescriptionCancelled = cfg.getString("warp.manage-gui.change-description.cancelled", "&eWarp description edit cancelled.");
-        manageWarpCurrentLabel = cfg.getString("warp.manage-gui.current-label", "&7Current:");
-        manageWarpDescriptionNone = cfg.getString("warp.manage-gui.description-none", "&8- &7(none)");
-        manageWarpDescriptionEntry = cfg.getString("warp.manage-gui.description-entry", "&8- &7%line%");
-        manageWarpChangeLocationTitle = cfg.getString("warp.manage-gui.change-location.title", "&bChange Location");
-        manageWarpChangeLocationLine1 = cfg.getString("warp.manage-gui.change-location.line1", "&7Click to set this warp location");
-        manageWarpChangeLocationLine2 = cfg.getString("warp.manage-gui.change-location.line2", "&7to your current position.");
-        manageWarpChangeLocationSame = cfg.getString("warp.manage-gui.change-location.same", "&eWarp location is unchanged.");
-        managWarpDeleteTitle = cfg.getString("warp.manage-gui.delete.title", "&cDelete Warp");
-        manageWarpDeleteLine1 = cfg.getString("warp.manage-gui.delete.line1", "&7Click to delete this warp.");
-        manageWarpDeleteLine2 = cfg.getString("warp.manage-gui.delete.line2", "&cThis action cannot be undone.");
-        manageWarpDeleteLine3 = cfg.getString("warp.manage-gui.delete.line3", "&7You can recreate it later");
-        manageWarpDeleteLine4 = cfg.getString("warp.manage-gui.delete.line4", "&7with /setwarp.");
-        manageWarpDeletePrompt = cfg.getString("warp.manage-gui.delete.prompt", "&7Type &b%keyword% &7to delete warp &b%name%&7.");
-        manageWarpDeleteConfirmKeyword = cfg.getString("warp.manage-gui.delete.confirm-keyword", "confirm");
-        manageWarpDeleteConfirmInvalid = cfg.getString("warp.manage-gui.delete.confirm-invalid", "&cDelete cancelled. You must type the exact confirmation keyword.");
-        manageWarpDeleteCancelled = cfg.getString("warp.manage-gui.delete.cancelled", "&eWarp delete cancelled.");
+        manageWarpChangeDescriptionLinesTooMany = cfg.getString("warp.manage-gui.change-description.lines-too-many", "&cDescription cannot have more than &b%max% &clines. You entered &b%count%&c.");
+        manageWarpChangeDescriptionLineTooLong = cfg.getString("warp.manage-gui.change-description.line-too-long", "&cDescription lines must be no longer than &b%max% &ccharacters. Line &b%line% &chas &b%length%&c.");
+        manageWarpChangeDescriptionAlreadyEmpty = cfg.getString("warp.manage-gui.change-description.already-empty", "&eWarp description is already empty.");
+        manageWarpChangeCategoryTitle = cfg.getString("warp.manage-gui.change-category.title", "&bChange Category");
+        manageWarpChangeCategoryLine1 = cfg.getString("warp.manage-gui.change-category.line1", "&7Click to change the category.");
+        manageWarpChangeCategoryLine2 = cfg.getString("warp.manage-gui.change-category.line2", "&7Categories help organize warps.");
+        manageWarpChangeCategoryPrompt = cfg.getString("warp.manage-gui.change-category.prompt", "&7Type a new category name in chat.");
+        manageWarpChangeCategoryInvalid = cfg.getString("warp.manage-gui.change-category.invalid", "&cCategory cannot be blank.");
+        manageWarpChangeCategorySame = cfg.getString("warp.manage-gui.change-category.same", "&eWarp category is unchanged.");
+        manageWarpChangeCategorySuccess = cfg.getString("warp.manage-gui.change-category.success", "&aWarp category updated to &b%value%&a.");
+        manageWarpChangeCategoryCancelled = cfg.getString("warp.manage-gui.change-category.cancelled", "&eWarp category change cancelled.");
+        manageWarpChangeNameDuplicate = cfg.getString("warp.manage-gui.change-name.duplicate", "&cThat warp name is already taken. Please choose another.");
         manageWarpBackTitle = cfg.getString("warp.manage-gui.back.title", "&eBack");
         manageWarpBackLine1 = cfg.getString("warp.manage-gui.back.line1", "&7Return to the warp list.");
         manageWarpBackLine2 = cfg.getString("warp.manage-gui.back.line2", "&7Your changes are saved instantly.");

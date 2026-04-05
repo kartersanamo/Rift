@@ -13,15 +13,17 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.UUID;
 
 public class TeleportManager {
-    private static final HashMap<UUID, Warp> warpTeleports = new HashMap<>();
-    private static final HashMap<UUID, BukkitTask> tasks = new HashMap<>();
+    private static final Map<UUID, BukkitTask> tasks = new ConcurrentHashMap<>();
 
     public static void teleportToWarp(Player player, Warp warp) {
-        warpTeleports.put(player.getUniqueId(), warp);
+        if (player == null || warp == null) {
+            return;
+        }
         startTeleportCountdown(player, warp);
     }
 
@@ -32,6 +34,12 @@ public class TeleportManager {
 
                 @Override
                 public void run() {
+                    if (!player.isOnline()) {
+                        removeTeleport(player.getUniqueId());
+                        this.cancel();
+                        return;
+                    }
+
                     if (timeLeft <= 0) {
                         doTeleport(player, warp.getLocation());
                         this.cancel();
@@ -61,6 +69,12 @@ public class TeleportManager {
     }
 
     private static void doTeleport(Player player, Location toLocation) {
+        if (toLocation == null || toLocation.getWorld() == null) {
+            player.sendMessage(ChatFormat.error(MessagesUtil.teleportInvalidTarget));
+            removeTeleport(player.getUniqueId());
+            return;
+        }
+
         player.teleport(toLocation);
         if (ConfigUtil.teleportCompleteSound != null) {
             SoundUtil.play(player, ConfigUtil.teleportCompleteSound, ConfigUtil.teleportCompleteSoundVolume, ConfigUtil.teleportCompleteSoundPitch);
@@ -83,11 +97,12 @@ public class TeleportManager {
     }
 
     public static void playerMoved(Player player) {
-        tasks.get(player.getUniqueId()).cancel();
+        BukkitTask task = tasks.get(player.getUniqueId());
+        if (task != null) {
+            task.cancel();
+        }
         removeTeleport(player.getUniqueId());
-        player.sendMessage(ChatFormat.error(
-                PlaceholderUtil.replace(MessagesUtil.teleportCancelledMoved)
-        ));
+        player.sendMessage(ChatFormat.error(MessagesUtil.teleportCancelledMoved));
     }
 
     public static boolean isPlayerTeleporting(Player player) {
@@ -95,10 +110,9 @@ public class TeleportManager {
     }
 
     public static void removeTeleport(UUID uuid) {
-        warpTeleports.remove(uuid);
-        if (tasks.containsKey(uuid)) {
-            tasks.get(uuid).cancel();
+        BukkitTask task = tasks.remove(uuid);
+        if (task != null) {
+            task.cancel();
         }
-        tasks.remove(uuid);
     }
 }

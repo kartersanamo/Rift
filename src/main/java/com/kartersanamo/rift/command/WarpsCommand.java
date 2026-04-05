@@ -4,12 +4,9 @@ import com.kartersanamo.rift.api.command.BaseCommand;
 import com.kartersanamo.rift.api.command.CommandContext;
 import com.kartersanamo.rift.api.command.annotations.PlayerOnly;
 import com.kartersanamo.rift.gui.WarpsGUI;
-import com.kartersanamo.rift.warp.Warp;
 import com.kartersanamo.rift.warp.WarpManager;
 import org.bukkit.entity.Player;
 
-import java.util.List;
-import java.util.Map;
 
 @PlayerOnly
 public class WarpsCommand extends BaseCommand {

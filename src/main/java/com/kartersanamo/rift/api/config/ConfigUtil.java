@@ -24,6 +24,8 @@ public class ConfigUtil {
 
     public static int warpNameMinLength;
     public static int warpNameMaxLength;
+    public static int warpDescriptionMaxLines;
+    public static int warpDescriptionMaxLength;
     public static int warpsGuiMinSize;
     public static int warpsGuiMaxRows;
 
@@ -45,6 +47,8 @@ public class ConfigUtil {
 
         warpNameMinLength = clamp(cfg.getInt("warp-name.min-length", 3), 1, 100);
         warpNameMaxLength = clamp(cfg.getInt("warp-name.max-length", 16), 1, 100);
+        warpDescriptionMaxLines = clamp(cfg.getInt("warp-description.max-lines", 10), 1, 50);
+        warpDescriptionMaxLength = clamp(cfg.getInt("warp-description.max-length-per-line", 100), 20, 500);
         warpsGuiMinSize = normalizeGuiSize(cfg.getInt("warps.gui.min-size", 9), 9);
         warpsGuiMaxRows = clamp(cfg.getInt("warps.gui.max-rows", 6), 1, 6);
     }

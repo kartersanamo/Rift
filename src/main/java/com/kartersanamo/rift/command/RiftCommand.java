@@ -11,8 +11,7 @@ public class RiftCommand extends BaseCommand {
     public RiftCommand() {
         super("rift",
                 "Main plugin entry point",
-                "/rift <reload>",
-                "rift.command"
+                "/rift <reload|admin>"
         );
     }
 
@@ -21,7 +20,7 @@ public class RiftCommand extends BaseCommand {
         context.getSender().sendMessage(ChatFormat.info(
                 PlaceholderUtil.replace(
                         MessagesUtil.commandUsage,
-                        "%usage%", this.getUsage())
+                        "%usage%", getUsage())
         ));
         return true;
     }
