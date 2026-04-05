@@ -45,6 +45,45 @@ warp:
     material: "&7Material: &b%material%"
     created: "&7Created: &b%time%"
     uses: "&7Uses: &b%uses%"
+  manage-gui:
+    error:
+      name: "&cUnable to load warp"
+      line1: "&7This warp is not available."
+      line2: "&7It may have been deleted"
+      line3: "&7or failed to load."
+      line4: "&7Re-open the menu and try again."
+    change-name:
+      title: "&bChange Name"
+      line1: "&7Click to rename this warp."
+      line2: "&7The new name must be unique."
+    current: "&7Current: &b%value%"
+    change-material:
+      title: "&bChange Material"
+      line1: "&7Click to change this warp icon."
+      line2: "&7Use any valid material."
+    change-description:
+      title: "&bChange Description"
+      line1: "&7Click to edit the description."
+      line2: "&7Use multiple lines if needed."
+    current-label: "&7Current:"
+    description-none: "&8- &7(none)"
+    description-entry: "&8- &7%line%"
+    change-location:
+      title: "&bChange Location"
+      line1: "&7Click to set this warp location"
+      line2: "&7to your current position."
+    delete:
+      title: "&cDelete Warp"
+      line1: "&7Click to delete this warp."
+      line2: "&cThis action cannot be undone."
+      line3: "&7You can recreate it later"
+      line4: "&7with /setwarp."
+    back:
+      title: "&eBack"
+      line1: "&7Return to the warp list."
+      line2: "&7Your changes are saved instantly."
+    info:
+      title: "&bWarp Information"
 
 warps:
   gui:

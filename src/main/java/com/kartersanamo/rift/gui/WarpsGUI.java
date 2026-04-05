@@ -21,23 +21,21 @@ import java.util.Map;
 public class WarpsGUI extends GUI {
 
     private final WarpManager warpManager;
-    private final Player player;
 
-    public WarpsGUI(WarpManager warpManager, Player player) {
+    public WarpsGUI(WarpManager warpManager) {
         super("warps_gui",
                 ColorUtil.translate(
                         PlaceholderUtil.replace(
                                 MessagesUtil.warpsGuiTitle,
                                 "%count%", String.valueOf(warpManager.getWarpCount())
                         )),
-                calculateSize(warpManager, player)
+                calculateSize(warpManager)
         );
         this.warpManager = warpManager;
-        this.player = player;
         build();
     }
 
-    private static int calculateSize(WarpManager warpManager, Player player) {
+    private static int calculateSize(WarpManager warpManager) {
         int homeCount = warpManager.getWarpCount();
         if (homeCount == 0) {
             return ConfigUtil.warpsGuiMinSize;
@@ -62,11 +60,11 @@ public class WarpsGUI extends GUI {
         for (Warp warp : warps.values()) {
             if (slot >= getSize()) break;
 
-            // Build lore
+            // Build description
             List<String> description = warp.getDescription();
             List<String> displayLore = new ArrayList<>();
 
-            // Add home lore if it exists
+            // Add a warp description if it exists
             if (description != null && !description.isEmpty()) {
                 for (String line : description) {
                     displayLore.add(ColorUtil.translate(line));
@@ -107,8 +105,8 @@ public class WarpsGUI extends GUI {
         if (clickType == ClickType.RIGHT || clickType == ClickType.SHIFT_RIGHT) {
             Warp warp = warpManager.getWarp(warpName);
             System.out.println("TODO: Open ManageWarpsGUI for " + warpName + ".");
-            //ManageWarpsGUI gui = new ManageWarpsGUI(warpManager, home, player);
-            //gui.open(player);
+            ManageWarpsGUI gui = new ManageWarpsGUI(warpManager, warp);
+            gui.open(player);
         }
 
         // Left-click to tp

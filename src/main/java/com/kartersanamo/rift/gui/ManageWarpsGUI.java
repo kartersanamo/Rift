@@ -1,10 +1,197 @@
 package com.kartersanamo.rift.gui;
 
+import com.kartersanamo.rift.api.chat.ColorUtil;
+import com.kartersanamo.rift.api.config.MessagesUtil;
+import com.kartersanamo.rift.api.gui.GUI;
+import com.kartersanamo.rift.api.item.ItemBuilder;
+import com.kartersanamo.rift.api.util.LocationUtil;
+import com.kartersanamo.rift.api.util.PlaceholderUtil;
 import com.kartersanamo.rift.warp.Warp;
 import com.kartersanamo.rift.warp.WarpManager;
-import org.bukkit.entity.Player;
+import org.bukkit.Material;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.ItemStack;
 
-public class ManageWarpsGUI {
-    public ManageWarpsGUI(WarpManager warpManager, Warp home, Player player) {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+public class ManageWarpsGUI extends GUI {
+
+    private final WarpManager warpManager;
+    private final Warp warp;
+
+    public ManageWarpsGUI(WarpManager warpManager, Warp warp) {
+        super("manage_warps_gui",
+                "Warp Manager",
+                27);
+        this.warpManager = warpManager;
+        this.warp = warp;
+        build();
+    }
+
+    private void build() {
+        // If the warp is null, show an error message
+        if (warp == null) {
+            ItemStack nullItem = new ItemBuilder(Material.BARRIER)
+                    .name(ColorUtil.translate(MessagesUtil.manageWarpErrorName))
+                    .lore(List.of(
+                            ColorUtil.translate(MessagesUtil.manageWarpErrorLine1),
+                            ColorUtil.translate(MessagesUtil.manageWarpErrorLine2),
+                            ColorUtil.translate(MessagesUtil.manageWarpErrorLine3),
+                            ColorUtil.translate(MessagesUtil.manageWarpErrorLine4)
+                    ))
+                    .build();
+            setItem(13, nullItem);
+        }
+        assert warp != null;
+
+        // Change name item
+        ItemStack changeNameItem = new ItemBuilder(Material.NAME_TAG)
+                .name(ColorUtil.translate(MessagesUtil.manageWarpChangeNameTitle))
+                .lore(List.of(
+                        ColorUtil.translate(MessagesUtil.manageWarpChangeNameLine1),
+                        ColorUtil.translate(MessagesUtil.manageWarpChangeNameLine2),
+                        ColorUtil.translate(MessagesUtil.blankLine),
+                        Objects.requireNonNull(ColorUtil.translate(
+                                PlaceholderUtil.replace(
+                                        MessagesUtil.manageWarpCurrent,
+                                        "%value%", warp.getName()
+                                )
+                        ))
+                ))
+                .build();
+        setItem(11, changeNameItem);
+        setClickHandler(11, this::changeName);
+
+        // Change material item
+        ItemStack changeMaterialItem = new ItemBuilder(warp.getMaterial())
+                .name(ColorUtil.translate(MessagesUtil.manageWarpChangeMaterialTitle))
+                .lore(List.of(
+                        ColorUtil.translate(MessagesUtil.manageWarpChangeMaterialLine1),
+                        ColorUtil.translate(MessagesUtil.manageWarpChangeMaterialLine2),
+                        ColorUtil.translate(MessagesUtil.blankLine),
+                        Objects.requireNonNull(ColorUtil.translate(
+                                PlaceholderUtil.replace(
+                                        MessagesUtil.manageWarpCurrent,
+                                        "%value%", warp.getMaterial().toString()
+                                )
+                        ))
+                ))
+                .build();
+        setItem(12, changeMaterialItem);
+        setClickHandler(12, this::changeMaterial);
+
+        // Change description item
+        List<String> description = new ArrayList<>();
+        description.add(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionLine1));
+        description.add(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionLine2));
+        description.add(ColorUtil.translate(MessagesUtil.blankLine));
+        description.add(ColorUtil.translate(MessagesUtil.manageWarpCurrentLabel));
+        List<String> currentDescription = warp.getDescription();
+
+        if (currentDescription == null || currentDescription.isEmpty()) {
+            description.add(ColorUtil.translate(MessagesUtil.manageWarpDescriptionNone));
+        } else {
+            for (String line : currentDescription) {
+                description.add(ColorUtil.translate(
+                        PlaceholderUtil.replace(MessagesUtil.manageWarpDescriptionEntry, "%line%", line)
+                ));
+            }
+        }
+
+        ItemStack changeLoreItem = new ItemBuilder(Material.PAPER)
+                .name(ColorUtil.translate(MessagesUtil.manageWarpChangeDescriptionTitle))
+                .lore(description)
+                .build();
+
+        setItem(13, changeLoreItem);
+        setClickHandler(13, this::changeDescription);
+
+        // Change location item
+        ItemStack changeLocationItem = new ItemBuilder(Material.MAP)
+                .name(ColorUtil.translate(MessagesUtil.manageWarpChangeLocationTitle))
+                .lore(List.of(
+                        ColorUtil.translate(MessagesUtil.manageWarpChangeLocationLine1),
+                        ColorUtil.translate(MessagesUtil.manageWarpChangeLocationLine2),
+                        ColorUtil.translate(MessagesUtil.blankLine),
+                        Objects.requireNonNull(ColorUtil.translate(
+                                PlaceholderUtil.replace(
+                                        MessagesUtil.manageWarpCurrent,
+                                        "%value%", LocationUtil.format(warp.getLocation())
+                                )
+                        ))
+                ))
+                .build();
+        setItem(14, changeLocationItem);
+        setClickHandler(14, this::changeLocation);
+
+        // Delete warp item
+        ItemStack deleteWarpItem = new ItemBuilder(Material.BARRIER)
+                .name(ColorUtil.translate(MessagesUtil.managWarpDeleteTitle))
+                .lore(List.of(
+                        ColorUtil.translate(MessagesUtil.manageWarpDeleteLine1),
+                        ColorUtil.translate(MessagesUtil.manageWarpDeleteLine2),
+                        ColorUtil.translate(MessagesUtil.manageWarpDeleteLine3),
+                        ColorUtil.translate(MessagesUtil.manageWarpDeleteLine4)
+                ))
+                .build();
+        setItem(15, deleteWarpItem);
+        setClickHandler(15, this::deleteWarp);
+
+        // Back button item
+        ItemStack backButtonItem = new ItemBuilder(Material.ARROW)
+                .name(ColorUtil.translate(MessagesUtil.manageWarpBackTitle))
+                .lore(List.of(
+                        ColorUtil.translate(MessagesUtil.manageWarpBackLine1),
+                        ColorUtil.translate(MessagesUtil.manageWarpBackLine2)
+                ))
+                .build();
+        setItem(18, backButtonItem);
+        setClickHandler(18, this::backButton);
+
+        // Warp information
+        List<String> lines = warpManager.getInformationLines(warp);
+        ItemStack homeInformationItem = new ItemBuilder(Material.BOOK)
+                .name(ColorUtil.translate(MessagesUtil.manageWwarpInfoTitle))
+                .lore(lines)
+                .build();
+        setItem(22, homeInformationItem);
+        setClickHandler(22, this::warpInformation);
+    }
+
+    private void changeName(InventoryClickEvent event) {
+        event.getWhoClicked().sendMessage("TODO: Implement name editing flow.");
+        // TODO: Implement name editing flow.
+    }
+
+    private void changeMaterial(InventoryClickEvent event) {
+        event.getWhoClicked().sendMessage("TODO: Implement material selection flow.");
+        // TODO: Implement material selection flow.
+    }
+
+    private void changeDescription(InventoryClickEvent event) {
+        event.getWhoClicked().sendMessage("TODO: Implement description editing flow.");
+        // TODO: Implement description editing flow.
+    }
+
+    private void changeLocation(InventoryClickEvent event) {
+        event.getWhoClicked().sendMessage("TODO: Implement location update flow.");
+        // TODO: Implement location update flow.
+    }
+
+    private void deleteWarp(InventoryClickEvent event) {
+        event.getWhoClicked().sendMessage("TODO: Implement warp delete confirmation flow.");
+        // TODO: Implement warp delete confirmation flow.
+    }
+
+    private void backButton(InventoryClickEvent event) {
+        event.getWhoClicked().sendMessage("TODO: Implement back navigation.");
+        // TODO: Implement back navigation.
+    }
+
+    private void warpInformation(InventoryClickEvent event) {
+        event.getWhoClicked().sendMessage("TODO: Implement detailed warp information action.");
+        // TODO: Implement detailed warp information action.
     }
 }

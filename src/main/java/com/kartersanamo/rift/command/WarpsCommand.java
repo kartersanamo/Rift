@@ -27,7 +27,7 @@ public class WarpsCommand extends BaseCommand {
     @Override
     protected boolean onExecute(CommandContext context) {
         Player player = context.getPlayer();
-        WarpsGUI warpsGUI = new WarpsGUI(warpManager, player);
+        WarpsGUI warpsGUI = new WarpsGUI(warpManager);
         warpsGUI.open(player);
 
         return true;

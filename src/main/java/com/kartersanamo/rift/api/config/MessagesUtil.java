@@ -48,6 +48,37 @@ public class MessagesUtil {
     public static String warpsGuiInstructionManage;
     public static String warpsGuiHomeName;
 
+    public static String manageWarpErrorName;
+    public static String manageWarpErrorLine1;
+    public static String manageWarpErrorLine2;
+    public static String manageWarpErrorLine3;
+    public static String manageWarpErrorLine4;
+    public static String manageWarpChangeNameTitle;
+    public static String manageWarpChangeNameLine1;
+    public static String manageWarpChangeNameLine2;
+    public static String manageWarpCurrent;
+    public static String manageWarpChangeMaterialTitle;
+    public static String manageWarpChangeMaterialLine1;
+    public static String manageWarpChangeMaterialLine2;
+    public static String manageWarpChangeDescriptionTitle;
+    public static String manageWarpChangeDescriptionLine1;
+    public static String manageWarpChangeDescriptionLine2;
+    public static String manageWarpCurrentLabel;
+    public static String manageWarpDescriptionNone;
+    public static String manageWarpDescriptionEntry;
+    public static String manageWarpChangeLocationTitle;
+    public static String manageWarpChangeLocationLine1;
+    public static String manageWarpChangeLocationLine2;
+    public static String managWarpDeleteTitle;
+    public static String manageWarpDeleteLine1;
+    public static String manageWarpDeleteLine2;
+    public static String manageWarpDeleteLine3;
+    public static String manageWarpDeleteLine4;
+    public static String manageWarpBackTitle;
+    public static String manageWarpBackLine1;
+    public static String manageWarpBackLine2;
+    public static String manageWwarpInfoTitle;
+
     public static void load(FileConfiguration cfg) {
         commandUsage = cfg.getString("command-usage", "Usage: %usage%");
         commandPlayerOnly = cfg.getString("command-player-only", "This command can only be executed by players.");
@@ -87,11 +118,42 @@ public class MessagesUtil {
         warpInfoCreated = cfg.getString("warp.info.created", "&7Created: &b%time%");
         warpInfoUses = cfg.getString("warp.info.uses", "&7Uses: &b%uses%");
 
-        warpsGuiTitle = cfg.getString("warps.gui.title", "&7Warps (&b%count%&7)");
+        warpsGuiTitle = cfg.getString("warps.gui.title", "Warps (&b%count%&r)");
         warpsGuiEmptyName = cfg.getString("warps.gui.empty.name", "&cNo warps available");
         warpsGuiEmptyLore = cfg.getString("warps.gui.empty.lore", "&7There are no warps to display.");
         warpsGuiInstructionTeleport = cfg.getString("warps.gui.instruction.teleport", "&7Left-click to teleport.");
         warpsGuiInstructionManage = cfg.getString("warps.gui.instruction.manage", "&7Right-click to manage.");
         warpsGuiHomeName = cfg.getString("warps.gui.home.name", "&b%name%");
+
+        manageWarpErrorName = cfg.getString("warp.manage-gui.error.name", "&cUnable to load warp");
+        manageWarpErrorLine1 = cfg.getString("warp.manage-gui.error.line1", "&7This warp is not available.");
+        manageWarpErrorLine2 = cfg.getString("warp.manage-gui.error.line2", "&7It may have been deleted");
+        manageWarpErrorLine3 = cfg.getString("warp.manage-gui.error.line3", "&7or failed to load.");
+        manageWarpErrorLine4 = cfg.getString("warp.manage-gui.error.line4", "&7Re-open the menu and try again.");
+        manageWarpChangeNameTitle = cfg.getString("warp.manage-gui.change-name.title", "&bChange Name");
+        manageWarpChangeNameLine1 = cfg.getString("warp.manage-gui.change-name.line1", "&7Click to rename this warp.");
+        manageWarpChangeNameLine2 = cfg.getString("warp.manage-gui.change-name.line2", "&7The new name must be unique.");
+        manageWarpCurrent = cfg.getString("warp.manage-gui.current", "&7Current: &b%value%");
+        manageWarpChangeMaterialTitle = cfg.getString("warp.manage-gui.change-material.title", "&bChange Material");
+        manageWarpChangeMaterialLine1 = cfg.getString("warp.manage-gui.change-material.line1", "&7Click to change this warp icon.");
+        manageWarpChangeMaterialLine2 = cfg.getString("warp.manage-gui.change-material.line2", "&7Use any valid material.");
+        manageWarpChangeDescriptionTitle = cfg.getString("warp.manage-gui.change-description.title", "&bChange Description");
+        manageWarpChangeDescriptionLine1 = cfg.getString("warp.manage-gui.change-description.line1", "&7Click to edit the description.");
+        manageWarpChangeDescriptionLine2 = cfg.getString("warp.manage-gui.change-description.line2", "&7Use multiple lines if needed.");
+        manageWarpCurrentLabel = cfg.getString("warp.manage-gui.current-label", "&7Current:");
+        manageWarpDescriptionNone = cfg.getString("warp.manage-gui.description-none", "&8- &7(none)");
+        manageWarpDescriptionEntry = cfg.getString("warp.manage-gui.description-entry", "&8- &7%line%");
+        manageWarpChangeLocationTitle = cfg.getString("warp.manage-gui.change-location.title", "&bChange Location");
+        manageWarpChangeLocationLine1 = cfg.getString("warp.manage-gui.change-location.line1", "&7Click to set this warp location");
+        manageWarpChangeLocationLine2 = cfg.getString("warp.manage-gui.change-location.line2", "&7to your current position.");
+        managWarpDeleteTitle = cfg.getString("warp.manage-gui.delete.title", "&cDelete Warp");
+        manageWarpDeleteLine1 = cfg.getString("warp.manage-gui.delete.line1", "&7Click to delete this warp.");
+        manageWarpDeleteLine2 = cfg.getString("warp.manage-gui.delete.line2", "&cThis action cannot be undone.");
+        manageWarpDeleteLine3 = cfg.getString("warp.manage-gui.delete.line3", "&7You can recreate it later");
+        manageWarpDeleteLine4 = cfg.getString("warp.manage-gui.delete.line4", "&7with /setwarp.");
+        manageWarpBackTitle = cfg.getString("warp.manage-gui.back.title", "&eBack");
+        manageWarpBackLine1 = cfg.getString("warp.manage-gui.back.line1", "&7Return to the warp list.");
+        manageWarpBackLine2 = cfg.getString("warp.manage-gui.back.line2", "&7Your changes are saved instantly.");
+        manageWwarpInfoTitle = cfg.getString("warp.manage-gui.info.title", "&bWarp Information");
     }
 }
