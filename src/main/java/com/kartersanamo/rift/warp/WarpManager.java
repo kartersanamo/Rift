@@ -228,20 +228,24 @@ public class WarpManager {
 
     public List<String> getInformationLines(Warp warp) {
         List<String> lines = new ArrayList<>();
+        List<String> description = warp.getDescription();
+        String creatorName = warp.getCreator() != null
+                ? warp.getCreator().getName()
+                : MessagesUtil.warpInfoCreatorUnknown;
 
         lines.add(ColorUtil.translate( PlaceholderUtil.replace(MessagesUtil.warpInfoName, "%name%", warp.getName())));
 
-        if (warp.getDescription().isEmpty()) { lines.add(ColorUtil.translate(MessagesUtil.warpInfoDescriptionNone));
+        if (description == null || description.isEmpty()) { lines.add(ColorUtil.translate(MessagesUtil.warpInfoDescriptionNone));
         } else {
             lines.add(ColorUtil.translate(MessagesUtil.warpInfoDescriptionLabel));
-            for (String descriptionLines : warp.getDescription()) {
+            for (String descriptionLines : description) {
                 lines.add(ColorUtil.translate( PlaceholderUtil.replace(MessagesUtil.warpInfoDescriptionEntry, "%line%", descriptionLines)));
             }
         }
 
         lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoCategory, "%category%", warp.getCategory())));
         lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoLocation, "%location%", LocationUtil.format(warp.getLocation()))));
-        lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoCreator, "%creator_name%", warp.getCreator().getName())));
+        lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoCreator, "%creator_name%", creatorName)));
         lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoMaterial, "%material%", warp.getMaterial().name())));
         lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoCreated, "%time%", TimeUtil.formatUnix(warp.getCreatedAt()))));
         lines.add(ColorUtil.translate(PlaceholderUtil.replace(MessagesUtil.warpInfoUses, "%uses%", String.valueOf(warp.getUses()))));

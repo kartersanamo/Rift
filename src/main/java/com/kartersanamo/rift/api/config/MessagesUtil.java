@@ -37,6 +37,7 @@ public class MessagesUtil {
     public static String warpInfoCategory;
     public static String warpInfoLocation;
     public static String warpInfoCreator;
+    public static String warpInfoCreatorUnknown;
     public static String warpInfoMaterial;
     public static String warpInfoCreated;
     public static String warpInfoUses;
@@ -114,6 +115,7 @@ public class MessagesUtil {
         warpInfoCategory = cfg.getString("warp.info.category", "&7Category: &b%category%");
         warpInfoLocation = cfg.getString("warp.info.location", "&7Location: &b%location%");
         warpInfoCreator = cfg.getString("warp.info.creator", "&7Creator: &b%creator_name%");
+        warpInfoCreatorUnknown = cfg.getString("warp.info.creator-unknown", "Unknown");
         warpInfoMaterial = cfg.getString("warp.info.material", "&7Material: &b%material%");
         warpInfoCreated = cfg.getString("warp.info.created", "&7Created: &b%time%");
         warpInfoUses = cfg.getString("warp.info.uses", "&7Uses: &b%uses%");

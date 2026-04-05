@@ -104,9 +104,8 @@ public class WarpsGUI extends GUI {
         // Right-click to manage
         if (clickType == ClickType.RIGHT || clickType == ClickType.SHIFT_RIGHT) {
             Warp warp = warpManager.getWarp(warpName);
-            System.out.println("TODO: Open ManageWarpsGUI for " + warpName + ".");
             ManageWarpsGUI gui = new ManageWarpsGUI(warpManager, warp);
-            gui.open(player);
+            gui.open(clicker);
         }
 
         // Left-click to tp

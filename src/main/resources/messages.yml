@@ -42,6 +42,7 @@ warp:
     category: "&7Category: &b%category%"
     location: "&7Location: &b%location%"
     creator: "&7Creator: &b%creator_name%"
+    creator-unknown: "Unknown"
     material: "&7Material: &b%material%"
     created: "&7Created: &b%time%"
     uses: "&7Uses: &b%uses%"
