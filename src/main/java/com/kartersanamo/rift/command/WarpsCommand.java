@@ -8,6 +8,10 @@ import com.kartersanamo.rift.gui.WarpsGUI;
 import com.kartersanamo.rift.warp.WarpManager;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 
 @PlayerOnly
 @CommandPermission("rift.warp.list")
@@ -27,9 +31,28 @@ public class WarpsCommand extends BaseCommand {
     protected boolean onExecute(CommandContext context) {
         Player player = context.getPlayer();
         String categoryFilter = context.hasArgs() ? context.getArgs()[0] : null;
-        WarpsGUI warpsGUI = new WarpsGUI(warpManager, categoryFilter);
+        WarpsGUI warpsGUI = new WarpsGUI(warpManager, categoryFilter, player);
         warpsGUI.open(player);
 
         return true;
+    }
+
+    @Override
+    protected List<String> onTabComplete(CommandContext context) {
+        if (context.getArgs().length != 1) {
+            return new ArrayList<>();
+        }
+
+        List<String> options = new ArrayList<>(warpManager.getCategories());
+        options.add("all");
+        String partial = context.getArgs()[0].toLowerCase(Locale.ROOT);
+
+        List<String> completions = new ArrayList<>();
+        for (String option : options) {
+            if (option != null && option.toLowerCase(Locale.ROOT).startsWith(partial)) {
+                completions.add(option);
+            }
+        }
+        return completions;
     }
 }

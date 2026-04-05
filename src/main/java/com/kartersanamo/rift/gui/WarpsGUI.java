@@ -16,39 +16,46 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class WarpsGUI extends GUI {
 
     private final WarpManager warpManager;
     private final String categoryFilter;
+    private final boolean categoryMenu;
+    private final boolean viewerCanManage;
 
     public WarpsGUI(WarpManager warpManager) {
-        this(warpManager, null);
+        this(warpManager, null, null);
     }
 
     public WarpsGUI(WarpManager warpManager, String categoryFilter) {
+        this(warpManager, categoryFilter, null);
+    }
+
+    public WarpsGUI(WarpManager warpManager, String categoryFilter, Player viewer) {
         super("warps_gui",
-                ColorUtil.translate(
-                        PlaceholderUtil.replace(
-                                MessagesUtil.warpsGuiTitle,
-                                "%count%", String.valueOf(warpManager.getWarpCount())
-                        ) + buildFilterSuffix(categoryFilter)),
-                calculateSize(warpManager)
+                buildTitle(warpManager, categoryFilter),
+                calculateSize(warpManager, categoryFilter)
         );
         this.warpManager = warpManager;
         this.categoryFilter = normalizeFilter(categoryFilter);
+        this.categoryMenu = shouldShowCategoryMenu(warpManager, this.categoryFilter);
+        this.viewerCanManage = viewer != null && viewer.hasPermission("rift.warp.manage");
         build();
     }
 
-    private static String buildFilterSuffix(String categoryFilter) {
-        if (categoryFilter == null || categoryFilter.isBlank()) {
-            return "";
+    private static String buildTitle(WarpManager warpManager, String categoryFilter) {
+        if (shouldShowCategoryMenu(warpManager, normalizeFilter(categoryFilter))) {
+            return ColorUtil.translate("&7Warp Categories");
         }
-        return " &8| &b" + categoryFilter;
+
+        int count = warpManager.getWarpsInCategory(categoryFilter).size();
+        String title = PlaceholderUtil.replace(MessagesUtil.warpsGuiTitle, "%count%", String.valueOf(count));
+        if (categoryFilter == null || categoryFilter.isBlank() || categoryFilter.equalsIgnoreCase("all")) {
+            return ColorUtil.translate(title);
+        }
+        return ColorUtil.translate(title + " &8| &b" + categoryFilter);
     }
 
     private static String normalizeFilter(String categoryFilter) {
@@ -58,20 +65,31 @@ public class WarpsGUI extends GUI {
         return categoryFilter.trim();
     }
 
-    private static int calculateSize(WarpManager warpManager) {
-        int homeCount = warpManager.getWarpCount();
-        if (homeCount == 0) {
-            return ConfigUtil.warpsGuiMinSize;
-        }
+    private static boolean shouldShowCategoryMenu(WarpManager warpManager, String categoryFilter) {
+        return (categoryFilter == null || categoryFilter.equalsIgnoreCase("all"))
+                && warpManager.getWarpCount() > 0;
+    }
 
-        int rows = Math.min(ConfigUtil.warpsGuiMaxRows, (int) Math.ceil(homeCount / 9.0));
-        return Math.max(ConfigUtil.warpsGuiMinSize, rows * 9);
+    private static int calculateSize(WarpManager warpManager, String categoryFilter) {
+        boolean categoryMenu = shouldShowCategoryMenu(warpManager, normalizeFilter(categoryFilter));
+        int itemCount = categoryMenu
+                ? Math.max(1, warpManager.getCategories().size())
+                : Math.max(1, warpManager.getWarpsInCategory(categoryFilter).size());
+
+        int minRows = Math.max(3, Math.max(1, ConfigUtil.warpsGuiMinSize / 9));
+        int rows = (int) Math.ceil(itemCount / 9.0) + 2;
+        rows = Math.max(minRows, Math.min(ConfigUtil.warpsGuiMaxRows, rows));
+        return rows * 9;
     }
 
     public void build() {
-        Map<String, Warp> warps = warpManager.getWarps();
+        if (categoryMenu) {
+            buildCategoryMenu();
+            return;
+        }
 
-        if (warps == null || warps.isEmpty()) {
+        List<Warp> warps = warpManager.getWarpsInCategory(categoryFilter);
+        if (warps.isEmpty()) {
             setItem(4, new ItemBuilder(Material.BARRIER)
                     .name(ColorUtil.translate(MessagesUtil.warpsGuiEmptyName))
                     .lore(ColorUtil.translate(MessagesUtil.warpsGuiEmptyLore))
@@ -79,137 +97,118 @@ public class WarpsGUI extends GUI {
             return;
         }
 
-        List<Warp> filteredWarps = warps.values().stream()
-                .filter(this::matchesFilter)
-                .collect(Collectors.toList());
+        List<Integer> slots = getDistributedSlots(Math.min(warps.size(), getInnerCapacity()));
+        for (int i = 0; i < slots.size(); i++) {
+            Warp warp = warps.get(i);
 
-        List<String> categories = warps.values().stream()
-                .map(Warp::getCategory)
-                .filter(category -> category != null && !category.isBlank())
-                .distinct()
-                .sorted(Comparator.comparing(String::toLowerCase))
-                .collect(Collectors.toCollection(ArrayList::new));
-        categories.add(0, "all");
-
-        boolean showFilterControls = ConfigUtil.warpsGuiCategoryFilterEnabled && categories.size() > 1;
-        int maxWarpSlots = showFilterControls ? getSize() - 3 : getSize();
-
-        if (filteredWarps.isEmpty()) {
-            String filterLabel = categoryFilter == null ? "all" : categoryFilter;
-            setItem(4, new ItemBuilder(Material.BARRIER)
-                    .name(ColorUtil.translate("&cNo warps in this category"))
-                    .lore(
-                            ColorUtil.translate("&7Current filter: &b" + filterLabel),
-                            ColorUtil.translate("&7Use the filter controls to change category.")
-                    )
-                    .build());
-        }
-
-        int slot = 0;
-        for (Warp warp : filteredWarps) {
-            if (slot >= maxWarpSlots) {
-                break;
-            }
-
-            // Build description
-            List<String> description = warp.getDescription();
-            List<String> displayLore = new ArrayList<>();
-
-            // Add a warp description if it exists
-            if (description != null && !description.isEmpty()) {
-                for (String line : description) {
-                    displayLore.add(ColorUtil.translate(line));
+            List<String> lore = new ArrayList<>();
+            if (warp.getDescription() != null && !warp.getDescription().isEmpty()) {
+                for (String line : warp.getDescription()) {
+                    lore.add(ColorUtil.translate(line));
                 }
-                displayLore.add(ColorUtil.translate(MessagesUtil.blankLine)); // Empty line separator
+            }
+            lore.add(ColorUtil.translate(MessagesUtil.blankLine));
+            lore.add(ColorUtil.translate(MessagesUtil.warpsGuiInstructionTeleport));
+            lore.add(ColorUtil.translate(MessagesUtil.blankLine));
+            lore.add(ColorUtil.translate("&8Category: &7" + warp.getCategory()));
+            if (viewerCanManage) {
+                lore.add(ColorUtil.translate(MessagesUtil.blankLine));
+                lore.add(ColorUtil.translate(MessagesUtil.warpsGuiInstructionManage));
             }
 
-            // Add instruction lines
-            displayLore.add(ColorUtil.translate(MessagesUtil.warpsGuiInstructionTeleport));
-            displayLore.add(ColorUtil.translate(MessagesUtil.warpsGuiInstructionManage));
-
-            // Create item
-            ItemStack item = new ItemBuilder(warp.getMaterial())
+            int slot = slots.get(i);
+            setItem(slot, new ItemBuilder(warp.getMaterial())
                     .name(ColorUtil.translate(
-                            PlaceholderUtil.replace(
-                                    MessagesUtil.warpsGuiHomeName,
-                                    "%name%", warp.getName()
-                            )
+                            PlaceholderUtil.replace(MessagesUtil.warpsGuiHomeName, "%name%", warp.getName())
                     ))
-                    .lore(displayLore)
-                    .build();
-
-            final String homeName = warp.getName();
-            setItem(slot, item);
-            setClickHandler(slot, event -> handleClick(event, homeName));
-            slot++;
-        }
-
-        if (showFilterControls) {
-            int currentIndex = getCurrentCategoryIndex(categories);
-            int previousIndex = (currentIndex - 1 + categories.size()) % categories.size();
-            int nextIndex = (currentIndex + 1) % categories.size();
-
-            int previousSlot = getSize() - 3;
-            int currentSlot = getSize() - 2;
-            int nextSlot = getSize() - 1;
-
-            setItem(previousSlot, new ItemBuilder(Material.ARROW)
-                    .name(ColorUtil.translate("&ePrevious Category"))
-                    .lore(ColorUtil.translate("&7Switch to &b" + categories.get(previousIndex)))
+                    .lore(lore)
                     .build());
-            setClickHandler(previousSlot, event -> {
-                Player player = (Player) event.getWhoClicked();
-                openFilter(player, categories.get(previousIndex));
-            });
-
-            String currentCategory = currentIndex == 0 ? "all" : categories.get(currentIndex);
-            setItem(currentSlot, new ItemBuilder(Material.HOPPER)
-                    .name(ColorUtil.translate("&bCategory Filter"))
-                    .lore(
-                            ColorUtil.translate("&7Current: &b" + currentCategory),
-                            ColorUtil.translate("&7Right/left arrows to cycle")
-                    )
-                    .build());
-
-            setItem(nextSlot, new ItemBuilder(Material.ARROW)
-                    .name(ColorUtil.translate("&eNext Category"))
-                    .lore(ColorUtil.translate("&7Switch to &b" + categories.get(nextIndex)))
-                    .build());
-            setClickHandler(nextSlot, event -> {
-                Player player = (Player) event.getWhoClicked();
-                openFilter(player, categories.get(nextIndex));
-            });
+            String warpName = warp.getName();
+            setClickHandler(slot, event -> handleWarpClick(event, warpName));
         }
     }
 
-    private int getCurrentCategoryIndex(List<String> categories) {
-        if (categoryFilter == null) {
-            return 0;
-        }
-        for (int i = 0; i < categories.size(); i++) {
-            if (categories.get(i).equalsIgnoreCase(categoryFilter)) {
-                return i;
-            }
-        }
-        return 0;
-    }
-
-    private boolean matchesFilter(Warp warp) {
-        if (categoryFilter == null) {
-            return true;
-        }
-        return warp.getCategory() != null && warp.getCategory().equalsIgnoreCase(categoryFilter);
-    }
-
-    private void openFilter(Player player, String category) {
-        if (category == null || category.equalsIgnoreCase("all")) {
-            new WarpsGUI(warpManager).open(player);
+    private void buildCategoryMenu() {
+        List<String> categories = warpManager.getCategories();
+        if (categories.isEmpty()) {
             return;
         }
-        new WarpsGUI(warpManager, category).open(player);
+
+        List<Integer> slots = getDistributedSlots(Math.min(categories.size(), getInnerCapacity()));
+        for (int i = 0; i < slots.size(); i++) {
+            String category = categories.get(i);
+            int count = warpManager.getWarpsInCategory(category).size();
+            int slot = slots.get(i);
+
+            setItem(slot, new ItemBuilder(Material.BOOKSHELF)
+                    .name(ColorUtil.translate("&b" + category))
+                    .lore(
+                            ColorUtil.translate("&7Warps: &b" + count),
+                            ColorUtil.translate(MessagesUtil.blankLine),
+                            ColorUtil.translate("&7Left-click to open this category")
+                    )
+                    .build());
+
+            setClickHandler(slot, event -> {
+                Player player = (Player) event.getWhoClicked();
+                new WarpsGUI(warpManager, category, player).open(player);
+            });
+        }
     }
 
-    private void handleClick(InventoryClickEvent event, String warpName) {
+    private int getInnerCapacity() {
+        int rows = getSize() / 9;
+        return Math.max(1, (rows - 2) * 9);
+    }
+
+    private List<Integer> getDistributedSlots(int itemCount) {
+        List<Integer> slots = new ArrayList<>();
+        if (itemCount <= 0) {
+            return slots;
+        }
+
+        int rows = getSize() / 9;
+        int innerRows = Math.max(1, rows - 2);
+        int base = itemCount / innerRows;
+        int remainder = itemCount % innerRows;
+
+        for (int innerRowIndex = 0; innerRowIndex < innerRows; innerRowIndex++) {
+            int itemsInRow = base + (innerRowIndex < remainder ? 1 : 0);
+            if (itemsInRow == 0) {
+                continue;
+            }
+            int row = innerRowIndex + 1; // Skip top border row.
+            for (int column : distributedColumns(itemsInRow)) {
+                slots.add(row * 9 + column);
+            }
+        }
+        return slots;
+    }
+
+    private List<Integer> distributedColumns(int count) {
+        List<Integer> columns = new ArrayList<>();
+        if (count <= 0) {
+            return columns;
+        }
+
+        if (count == 1) {
+            columns.add(4);
+            return columns;
+        }
+
+        int previous = -1;
+        for (int i = 0; i < count; i++) {
+            int column = (int) Math.round(i * (8.0 / (count - 1)));
+            if (column <= previous) {
+                column = Math.min(8, previous + 1);
+            }
+            columns.add(column);
+            previous = column;
+        }
+        return columns;
+    }
+
+    private void handleWarpClick(InventoryClickEvent event, String warpName) {
         if (!(event.getWhoClicked() instanceof Player clicker)) {
             return;
         }
@@ -246,6 +245,7 @@ public class WarpsGUI extends GUI {
                 clicker.closeInventory();
                 return;
             }
+
             clicker.closeInventory();
             warp.queueTeleport(clicker);
             warpManager.update(warp);

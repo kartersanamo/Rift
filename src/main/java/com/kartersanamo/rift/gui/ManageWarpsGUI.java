@@ -438,7 +438,7 @@ public class ManageWarpsGUI extends GUI {
                             PlaceholderUtil.replace(MessagesUtil.warpDeleted, "%name%", warp.getName())
                     ));
                     AuditLogger.action(player, "warp.manage.delete", "id=" + warp.getId() + " name=" + warp.getName());
-                    new WarpsGUI(warpManager).open(player);
+                    new WarpsGUI(warpManager, null, player).open(player);
                 },
                 () -> player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpDeleteCancelled))
         );
@@ -447,7 +447,7 @@ public class ManageWarpsGUI extends GUI {
     // Called when someone clicks on the item to go to the previous GUI
     private void backButton(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
-        new WarpsGUI(warpManager).open(player);
+        new WarpsGUI(warpManager, null, player).open(player);
     }
 
     // Called when someone clicks on the item to display the warp information

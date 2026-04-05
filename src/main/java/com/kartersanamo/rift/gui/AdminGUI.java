@@ -65,7 +65,7 @@ public class AdminGUI extends GUI {
          setClickHandler(11, event -> {
              // Open a new WarpsGUI which shows all warps that can be managed
              Player player = (Player) event.getWhoClicked();
-             new WarpsGUI(warpManager).open(player);
+             new WarpsGUI(warpManager, null, player).open(player);
          });
 
          // Plugin info item

@@ -26,11 +26,13 @@ public class WarpManager {
     }
 
     private Map<String, Warp> warps;// ID -> Warp
+    private final Set<String> categories;
     private final Plugin plugin;
 
     public WarpManager(Plugin plugin) {
         this.plugin = plugin;
         this.warps = new HashMap<>();
+        this.categories = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     }
 
     private ConfigFile getWarpFile() {
@@ -41,6 +43,16 @@ public class WarpManager {
         ConfigFile file = getWarpFile();
         ConfigurationSection section = file.getConfig().getConfigurationSection("warps");
         warps = new HashMap<>();
+        categories.clear();
+
+        List<String> persistedCategories = file.getConfig().getStringList("categories");
+        for (String category : persistedCategories) {
+            String normalized = normalizeCategory(category);
+            if (normalized != null) {
+                categories.add(normalized);
+            }
+        }
+        categories.add("default");
 
         if (section == null) {
             Rift.getLog().info("Loaded 0 warps.");
@@ -54,7 +66,7 @@ public class WarpManager {
 
             String name = warpSection.getString("name", warpId);
             List<String> description = new ArrayList<>(warpSection.getStringList("description"));
-            String category = warpSection.getString("category", "default");
+            String category = ensureCategoryExists(warpSection.getString("category", "default"));
 
             Location location = warpSection.getLocation("location");
             if (location == null) {
@@ -101,6 +113,7 @@ public class WarpManager {
 
     public void unloadWarps() {
         warps = new HashMap<>();
+        categories.clear();
     }
 
     private void saveWarps() {
@@ -121,10 +134,13 @@ public class WarpManager {
 
         }
 
+        file.getConfig().set("categories", new ArrayList<>(categories));
+
         file.save();
     }
 
     public void addWarp(Warp warp) {
+        ensureCategoryExists(warp.getCategory());
         warps.put(warp.getId(), warp);
         saveWarps();
     }
@@ -201,6 +217,7 @@ public class WarpManager {
     }
 
     public void update(Warp warp) {
+        ensureCategoryExists(warp.getCategory());
         warps.put(warp.getId(), warp);
         saveWarps();
     }
@@ -209,6 +226,93 @@ public class WarpManager {
         return !ChatColor.stripColor(
                 ChatColor.translateAlternateColorCodes('&', warpName)
         ).equals(warpName);
+    }
+
+    public List<String> getCategories() {
+        return new ArrayList<>(categories);
+    }
+
+    public boolean hasAnyNonDefaultCategory() {
+        for (String category : categories) {
+            if (!category.equalsIgnoreCase("default")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean categoryExists(String category) {
+        String normalized = normalizeCategory(category);
+        return normalized != null && categories.contains(normalized);
+    }
+
+    public String ensureCategoryExists(String category) {
+        String normalized = normalizeCategory(category);
+        if (normalized == null) {
+            normalized = "default";
+        }
+        categories.add(normalized);
+        return normalized;
+    }
+
+    public boolean createCategory(String category) {
+        String normalized = normalizeCategory(category);
+        if (normalized == null) {
+            return false;
+        }
+        boolean added = categories.add(normalized);
+        if (added) {
+            saveWarps();
+        }
+        return added;
+    }
+
+    public boolean deleteCategory(String category) {
+        String normalized = normalizeCategory(category);
+        if (normalized == null || normalized.equalsIgnoreCase("default")) {
+            return false;
+        }
+        if (!categories.remove(normalized)) {
+            return false;
+        }
+
+        for (Warp warp : warps.values()) {
+            if (warp.getCategory() != null && warp.getCategory().equalsIgnoreCase(normalized)) {
+                warp.setCategory("default");
+            }
+        }
+        categories.add("default");
+        saveWarps();
+        return true;
+    }
+
+    public void assignWarpCategory(Warp warp, String category) {
+        if (warp == null) {
+            return;
+        }
+        warp.setCategory(ensureCategoryExists(category));
+        update(warp);
+    }
+
+    public List<Warp> getWarpsInCategory(String category) {
+        if (category == null || category.isBlank() || category.equalsIgnoreCase("all")) {
+            return new ArrayList<>(warps.values());
+        }
+        List<Warp> filtered = new ArrayList<>();
+        for (Warp warp : warps.values()) {
+            if (warp.getCategory() != null && warp.getCategory().equalsIgnoreCase(category)) {
+                filtered.add(warp);
+            }
+        }
+        return filtered;
+    }
+
+    private String normalizeCategory(String category) {
+        if (category == null) {
+            return null;
+        }
+        String normalized = category.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     public void sendInfo(Warp warp, Player player) {
