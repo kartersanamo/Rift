@@ -26,44 +26,70 @@ import java.util.UUID;
 
 public class WarpsGUI extends GUI {
 
+    private static final int SLOT_PREVIOUS = 45;
+    private static final int SLOT_BACK = 46;
+    private static final int SLOT_CREATE_CATEGORY = 47;
+    private static final int SLOT_CREATE_WARP = 48;
+    private static final int SLOT_PAGE_INFO = 49;
+    private static final int SLOT_MANAGE_CATEGORY = 50;
+    private static final int SLOT_NEXT = 52;
+
     private final WarpManager warpManager;
     private final String categoryFilter;
     private final boolean categoryMenu;
     private final boolean viewerCanManage;
+    private final int page;
 
     public WarpsGUI(WarpManager warpManager) {
-        this(warpManager, null, null);
+        this(warpManager, null, null, 1);
     }
 
     public WarpsGUI(WarpManager warpManager, String categoryFilter) {
-        this(warpManager, categoryFilter, null);
+        this(warpManager, categoryFilter, null, 1);
     }
 
     public WarpsGUI(WarpManager warpManager, String categoryFilter, Player viewer) {
+        this(warpManager, categoryFilter, viewer, 1);
+    }
+
+    public WarpsGUI(WarpManager warpManager, String categoryFilter, Player viewer, int page) {
         super(
                 "warps_gui",
-                buildTitle(warpManager, categoryFilter),
+                buildTitle(
+                        warpManager,
+                        categoryFilter,
+                        calculateSize(warpManager, categoryFilter),
+                        clampPage(
+                                warpManager,
+                                normalizeFilter(categoryFilter),
+                                calculateSize(warpManager, categoryFilter),
+                                page
+                        )
+                ),
                 calculateSize(warpManager, categoryFilter)
         );
         this.warpManager = warpManager;
         this.categoryFilter = normalizeFilter(categoryFilter);
         this.categoryMenu = shouldShowCategoryMenu(warpManager, this.categoryFilter);
         this.viewerCanManage = viewer != null && viewer.hasPermission("rift.warp.manage");
+        this.page = clampPage(warpManager, this.categoryFilter, getSize(), page);
         build();
     }
 
-    private static String buildTitle(WarpManager warpManager, String categoryFilter) {
+    private static String buildTitle(WarpManager warpManager, String categoryFilter, int size, int requestedPage) {
         String normalizedFilter = normalizeFilter(categoryFilter);
         if (shouldShowCategoryMenu(warpManager, normalizedFilter)) {
-            return ColorUtil.translate("Warp Categories");
+            int pageCount = getPageCount(warpManager, normalizedFilter, size);
+            return ColorUtil.translate(appendPageSuffix("Warp Categories", requestedPage, pageCount));
         }
 
         int count = warpManager.getWarpsInCategory(normalizedFilter).size();
         String title = PlaceholderUtil.replace(MessagesUtil.warpsGuiTitle, "%count%", String.valueOf(count));
+        int pageCount = getPageCount(warpManager, normalizedFilter, size);
         if (normalizedFilter == null || normalizedFilter.equalsIgnoreCase("all")) {
-            return ColorUtil.translate(title);
+            return ColorUtil.translate(appendPageSuffix(title, requestedPage, pageCount));
         }
-        return ColorUtil.translate(title + " &8| &b" + normalizedFilter);
+        return ColorUtil.translate(appendPageSuffix(title + " &8| &b" + normalizedFilter, requestedPage, pageCount));
     }
 
     private static String normalizeFilter(String categoryFilter) {
@@ -89,11 +115,31 @@ public class WarpsGUI extends GUI {
         return WarpsMenuLayout.menuSizeForItems(itemCount);
     }
 
+    private static int getPageCount(WarpManager warpManager, String categoryFilter, int size) {
+        int itemCount = shouldShowCategoryMenu(warpManager, categoryFilter)
+                ? warpManager.getCategoriesForWarpsMenu().size()
+                : warpManager.getWarpsInCategory(categoryFilter).size();
+        int pageSize = WarpsMenuLayout.innerCapacity(size);
+        return Math.max(1, (int) Math.ceil(Math.max(0, itemCount) / (double) pageSize));
+    }
+
+    private static int clampPage(WarpManager warpManager, String categoryFilter, int size, int requestedPage) {
+        return Math.max(1, Math.min(requestedPage, getPageCount(warpManager, categoryFilter, size)));
+    }
+
+    private static String appendPageSuffix(String title, int page, int pageCount) {
+        if (pageCount <= 1) {
+            return title;
+        }
+        return title + " &8| &7Page &b" + page + "&7/&b" + pageCount;
+    }
+
     public void build() {
         fillFrame();
 
         if (categoryMenu) {
             buildCategoryMenu();
+            addNavigationButtons();
             addAdminButtons();
             return;
         }
@@ -105,18 +151,21 @@ public class WarpsGUI extends GUI {
                     .name(ColorUtil.translate(MessagesUtil.warpsGuiEmptyName))
                     .lore(ColorUtil.translate(MessagesUtil.warpsGuiEmptyLore))
                     .build());
+            addNavigationButtons();
             addAdminButtons();
             return;
         }
 
         Category category = warpManager.getCategory(categoryFilter);
-        int visibleCount = Math.min(warps.size(), WarpsMenuLayout.innerCapacity(getSize()));
-        List<Integer> fallbackSlots = WarpsMenuLayout.distributedInnerSlots(getSize(), visibleCount);
+        int pageSize = WarpsMenuLayout.innerCapacity(getSize());
+        int fromIndex = (page - 1) * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, warps.size());
+        List<Warp> pageWarps = warps.subList(fromIndex, toIndex);
+        List<Integer> fallbackSlots = WarpsMenuLayout.distributedInnerSlots(getSize(), pageWarps.size());
         Set<Integer> used = new HashSet<>();
         int fallbackIndex = 0;
 
-        for (int index = 0; index < visibleCount; index++) {
-            Warp warp = warps.get(index);
+        for (Warp warp : pageWarps) {
             Integer preferred = category != null ? warpManager.getWarpSlotInCategory(category.getName(), warp.getId()) : null;
             int slot = chooseSlot(preferred, fallbackSlots, used, fallbackIndex);
             while (fallbackIndex < fallbackSlots.size() && used.contains(fallbackSlots.get(fallbackIndex))) {
@@ -144,6 +193,7 @@ public class WarpsGUI extends GUI {
             setClickHandler(slot, event -> handleWarpClick(event, warpName));
         }
 
+        addNavigationButtons();
         addAdminButtons();
     }
 
@@ -155,16 +205,19 @@ public class WarpsGUI extends GUI {
                     .name(ColorUtil.translate("&cNo categories to display"))
                     .lore(ColorUtil.translate("&7Create a warp or category to get started."))
                     .build());
+            addNavigationButtons();
             return;
         }
 
-        int visibleCount = Math.min(categories.size(), WarpsMenuLayout.innerCapacity(getSize()));
-        List<Integer> fallbackSlots = WarpsMenuLayout.distributedInnerSlots(getSize(), visibleCount);
+        int pageSize = WarpsMenuLayout.innerCapacity(getSize());
+        int fromIndex = (page - 1) * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, categories.size());
+        List<Category> pageCategories = categories.subList(fromIndex, toIndex);
+        List<Integer> fallbackSlots = WarpsMenuLayout.distributedInnerSlots(getSize(), pageCategories.size());
         Set<Integer> used = new HashSet<>();
         int fallbackIndex = 0;
 
-        for (int index = 0; index < visibleCount; index++) {
-            Category category = categories.get(index);
+        for (Category category : pageCategories) {
             int count = warpManager.getWarpsInCategory(category.getName()).size();
             Integer preferred = warpManager.getCategorySlot(category.getName());
             int slot = chooseSlot(preferred, fallbackSlots, used, fallbackIndex);
@@ -195,6 +248,7 @@ public class WarpsGUI extends GUI {
             setClickHandler(slot, event -> handleCategoryClick(event, categoryName));
         }
 
+        addNavigationButtons();
     }
 
     private int chooseSlot(Integer preferred, List<Integer> fallbackSlots, Set<Integer> used, int fallbackIndex) {
@@ -232,51 +286,93 @@ public class WarpsGUI extends GUI {
 
     private void addAdminButtons() {
         if (!viewerCanManage) {
-            if (!categoryMenu && categoryFilter != null && !categoryFilter.equalsIgnoreCase("all")) {
-                int backSlot = getSize() - 9;
-                setItem(backSlot, new ItemBuilder(Material.ARROW)
-                        .name(ColorUtil.translate("&eBack to Categories"))
-                        .build());
-                setClickHandler(backSlot, event -> new WarpsGUI(warpManager, null, (Player) event.getWhoClicked()).open((Player) event.getWhoClicked()));
-            }
             return;
         }
 
-        int createCategorySlot = getSize() - 5;
-        setItem(createCategorySlot, new ItemBuilder(Material.WRITABLE_BOOK)
+        if (categoryMenu) {
+            setItem(SLOT_CREATE_CATEGORY, new ItemBuilder(Material.WRITABLE_BOOK)
                 .name(ColorUtil.translate("&aCreate Category"))
                 .lore(
                         ColorUtil.translate("&7Click to create a new category."),
                         ColorUtil.translate("&7Then right-click it to configure layout.")
                 )
                 .build());
-        setClickHandler(createCategorySlot, event -> createCategory((Player) event.getWhoClicked()));
+            setClickHandler(SLOT_CREATE_CATEGORY, event -> createCategory((Player) event.getWhoClicked()));
+        }
 
-        int createWarpSlot = getSize() - 4;
-        setItem(createWarpSlot, new ItemBuilder(Material.ENDER_PEARL)
+        setItem(SLOT_CREATE_WARP, new ItemBuilder(Material.ENDER_PEARL)
                 .name(ColorUtil.translate("&aCreate Warp Here"))
                 .lore(
                         ColorUtil.translate("&7Creates a warp at your current location."),
                         ColorUtil.translate("&7If this menu is a category page, it auto-assigns there.")
                 )
                 .build());
-        setClickHandler(createWarpSlot, event -> createWarpHere((Player) event.getWhoClicked()));
+        setClickHandler(SLOT_CREATE_WARP, event -> createWarpHere((Player) event.getWhoClicked()));
 
-        int manageCategorySlot = getSize() - 3;
         if (!categoryMenu && categoryFilter != null && !categoryFilter.equalsIgnoreCase("all")) {
-            setItem(manageCategorySlot, new ItemBuilder(Material.COMPARATOR)
+            setItem(SLOT_MANAGE_CATEGORY, new ItemBuilder(Material.COMPARATOR)
                     .name(ColorUtil.translate("&bManage This Category"))
                     .lore(ColorUtil.translate("&7Open category settings and layout tools."))
                     .build());
-            setClickHandler(manageCategorySlot, event -> new CategoryManagerGUI(warpManager, categoryFilter).open((Player) event.getWhoClicked()));
+            setClickHandler(SLOT_MANAGE_CATEGORY, event -> new CategoryManagerGUI(warpManager, categoryFilter).open((Player) event.getWhoClicked()));
+        }
+    }
+
+    private void addNavigationButtons() {
+        int totalPages = getPageCount(warpManager, categoryFilter, getSize());
+        if (totalPages <= 1) {
+            return;
         }
 
-        int backSlot = getSize() - 9;
-        if (!categoryMenu && categoryFilter != null && !categoryFilter.equalsIgnoreCase("all")) {
-            setItem(backSlot, new ItemBuilder(Material.ARROW)
-                    .name(ColorUtil.translate("&eBack to Categories"))
+        if (page > 1) {
+            setItem(SLOT_PREVIOUS, new ItemBuilder(Material.ARROW)
+                    .name(ColorUtil.translate("&ePrevious Page"))
+                    .lore(ColorUtil.translate("&7Go to page &b" + (page - 1)))
                     .build());
-            setClickHandler(backSlot, event -> new WarpsGUI(warpManager, null, (Player) event.getWhoClicked()).open((Player) event.getWhoClicked()));
+            setClickHandler(SLOT_PREVIOUS, event -> new WarpsGUI(warpManager, categoryFilter, (Player) event.getWhoClicked(), page - 1).open((Player) event.getWhoClicked()));
+        }
+
+        List<String> pageLore = new ArrayList<>();
+        pageLore.add(ColorUtil.translate("&7Browsing " + (categoryMenu ? "categories" : "warps") + "."));
+        if (viewerCanManage) {
+            pageLore.add(ColorUtil.translate("&7Right-click to jump to a page."));
+        }
+
+        setItem(SLOT_PAGE_INFO, new ItemBuilder(Material.PAPER)
+                .name(ColorUtil.translate("&bPage " + page + "/" + totalPages))
+                .lore(pageLore)
+                .build());
+        setClickHandler(SLOT_PAGE_INFO, event -> {
+            if (!viewerCanManage || !(event.getWhoClicked() instanceof Player player)) {
+                return;
+            }
+
+            if (!event.getClick().isRightClick()) {
+                return;
+            }
+
+            player.closeInventory();
+            Rift.getInstance().getChatInputManager().awaitInput(player,
+                    MessagesUtil.warpsGuiPageJumpPrompt,
+                    input -> handlePageJump(player, input),
+                    () -> player.sendMessage(ChatFormat.warning(ColorUtil.translate(MessagesUtil.warpsGuiPageJumpCancelled)))
+            );
+        });
+
+        if (page < totalPages) {
+            setItem(SLOT_NEXT, new ItemBuilder(Material.ARROW)
+                    .name(ColorUtil.translate("&eNext Page"))
+                    .lore(ColorUtil.translate("&7Go to page &b" + (page + 1)))
+                    .build());
+            setClickHandler(SLOT_NEXT, event -> new WarpsGUI(warpManager, categoryFilter, (Player) event.getWhoClicked(), page + 1).open((Player) event.getWhoClicked()));
+        }
+
+        if (!categoryMenu && categoryFilter != null && !categoryFilter.equalsIgnoreCase("all")) {
+            setItem(SLOT_BACK, new ItemBuilder(Material.BARRIER)
+                    .name(ColorUtil.translate("&cBack to Categories"))
+                    .lore(ColorUtil.translate("&7Return to the main category menu."))
+                    .build());
+            setClickHandler(SLOT_BACK, event -> new WarpsGUI(warpManager, null, (Player) event.getWhoClicked(), page).open((Player) event.getWhoClicked()));
         }
     }
 
@@ -297,10 +393,40 @@ public class WarpsGUI extends GUI {
                         AuditLogger.action(player, "category.create", "category=" + name);
                         player.sendMessage(ChatFormat.success("Created category " + name));
                     }
-                    new WarpsGUI(warpManager, null, player).open(player);
+                    new WarpsGUI(warpManager, null, player, page).open(player);
                 },
                 () -> player.sendMessage(ChatFormat.warning("Category creation cancelled."))
         );
+    }
+
+    private void handlePageJump(Player player, String input) {
+        String raw = input == null ? "" : input.trim();
+        if (raw.isBlank()) {
+            player.sendMessage(ChatFormat.error(ColorUtil.translate(MessagesUtil.warpsGuiPageJumpInvalid)));
+            new WarpsGUI(warpManager, categoryFilter, player, page).open(player);
+            return;
+        }
+
+        int requestedPage;
+        try {
+            requestedPage = Integer.parseInt(raw);
+        } catch (NumberFormatException ex) {
+            player.sendMessage(ChatFormat.error(ColorUtil.translate(MessagesUtil.warpsGuiPageJumpInvalid)));
+            new WarpsGUI(warpManager, categoryFilter, player, page).open(player);
+            return;
+        }
+
+        int totalPages = getPageCount(warpManager, categoryFilter, getSize());
+        if (requestedPage < 1 || requestedPage > totalPages) {
+            player.sendMessage(ChatFormat.error(ColorUtil.translate(PlaceholderUtil.replace(
+                    MessagesUtil.warpsGuiPageJumpOutOfRange,
+                    "%max%", String.valueOf(totalPages)
+            ))));
+            new WarpsGUI(warpManager, categoryFilter, player, page).open(player);
+            return;
+        }
+
+        new WarpsGUI(warpManager, categoryFilter, player, requestedPage).open(player);
     }
 
     private void createWarpHere(Player player) {
@@ -344,7 +470,7 @@ public class WarpsGUI extends GUI {
                     }
 
                     player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1f, 1f);
-                    new WarpsGUI(warpManager, categoryMenu ? null : targetCategory, player).open(player);
+                    new WarpsGUI(warpManager, categoryMenu ? null : targetCategory, player, page).open(player);
                 },
                 () -> player.sendMessage(ChatFormat.warning("Warp creation cancelled."))
         );
@@ -365,7 +491,7 @@ public class WarpsGUI extends GUI {
             return;
         }
 
-        new WarpsGUI(warpManager, categoryName, player).open(player);
+        new WarpsGUI(warpManager, categoryName, player, page).open(player);
     }
 
     private void handleWarpClick(InventoryClickEvent event, String warpName) {

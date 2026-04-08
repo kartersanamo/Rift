@@ -51,6 +51,10 @@ public class MessagesUtil {
     public static String warpsGuiInstructionTeleport;
     public static String warpsGuiInstructionManage;
     public static String warpsGuiHomeName;
+    public static String warpsGuiPageJumpPrompt;
+    public static String warpsGuiPageJumpInvalid;
+    public static String warpsGuiPageJumpOutOfRange;
+    public static String warpsGuiPageJumpCancelled;
 
     public static String manageWarpErrorName;
     public static String manageWarpErrorLine1;
@@ -166,6 +170,10 @@ public class MessagesUtil {
         warpsGuiInstructionTeleport = cfg.getString("warps.gui.instruction.teleport", "&7Left-click to teleport.");
         warpsGuiInstructionManage = cfg.getString("warps.gui.instruction.manage", "&7Right-click to manage.");
         warpsGuiHomeName = cfg.getString("warps.gui.home.name", "&b%name%");
+        warpsGuiPageJumpPrompt = cfg.getString("warps.gui.page-jump.prompt", "&7Type the page number to jump to.");
+        warpsGuiPageJumpInvalid = cfg.getString("warps.gui.page-jump.invalid", "&cPlease enter a valid page number.");
+        warpsGuiPageJumpOutOfRange = cfg.getString("warps.gui.page-jump.out-of-range", "&cPage number must be between &b1 &cand &b%max%&c.");
+        warpsGuiPageJumpCancelled = cfg.getString("warps.gui.page-jump.cancelled", "&ePage jump cancelled.");
 
         manageWarpErrorName = cfg.getString("warp.manage-gui.error.name", "&cUnable to load warp");
         manageWarpErrorLine1 = cfg.getString("warp.manage-gui.error.line1", "&7This warp is not available.");

@@ -133,3 +133,8 @@ warps:
       manage: "&7Right-click to manage."
     home:
       name: "&b%name%"
+    page-jump:
+      prompt: "&7Type the page number to jump to."
+      invalid: "&cPlease enter a valid page number."
+      out-of-range: "&cPage number must be between &b1 &cand &b%max%&c."
+      cancelled: "&ePage jump cancelled."
