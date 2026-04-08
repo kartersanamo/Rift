@@ -3,7 +3,6 @@ package com.kartersanamo.rift.gui;
 import com.kartersanamo.rift.Rift;
 import com.kartersanamo.rift.api.chat.ChatFormat;
 import com.kartersanamo.rift.api.chat.ColorUtil;
-import com.kartersanamo.rift.api.config.ConfigUtil;
 import com.kartersanamo.rift.api.gui.GUI;
 import com.kartersanamo.rift.api.item.ItemBuilder;
 import com.kartersanamo.rift.api.logging.AuditLogger;
@@ -30,6 +29,8 @@ public class CategoryManagerGUI extends GUI {
     }
 
     private void build() {
+        fillFrame();
+
         Category category = warpManager.getCategory(categoryName);
         if (category == null) {
             setItem(22, new ItemBuilder(Material.BARRIER)
@@ -78,17 +79,23 @@ public class CategoryManagerGUI extends GUI {
                 .build());
         setClickHandler(13, this::setCategorySlot);
 
-        setItem(14, new ItemBuilder(Material.EMERALD)
-                .name(ColorUtil.translate("&aAdd Warp to Category"))
-                .lore(ColorUtil.translate("&7Type a warp name to assign here."))
+        setItem(14, new ItemBuilder(Material.CHEST_MINECART)
+                .name(ColorUtil.translate("&bManage Category Warps"))
+                .lore(
+                        ColorUtil.translate("&7Open a warp browser for this category."),
+                        ColorUtil.translate("&7Left-click: assign | Right-click: move to default")
+                )
                 .build());
-        setClickHandler(14, this::addWarp);
+        setClickHandler(14, event -> {
+            Player player = (Player) event.getWhoClicked();
+            new CategoryWarpAssignmentGUI(warpManager, categoryName).open(player);
+        });
 
-        setItem(15, new ItemBuilder(Material.REDSTONE)
-                .name(ColorUtil.translate("&cRemove Warp from Category"))
-                .lore(ColorUtil.translate("&7Type a warp name to move to default."))
+        setItem(15, new ItemBuilder(Material.STRUCTURE_VOID)
+                .name(ColorUtil.translate("&bClear All Warp Slot Overrides"))
+                .lore(ColorUtil.translate("&7Keep warps in this category, but reset layout."))
                 .build());
-        setClickHandler(15, this::removeWarp);
+        setClickHandler(15, event -> clearWarpSlotOverrides((Player) event.getWhoClicked(), category));
 
         setItem(16, new ItemBuilder(Material.BARRIER)
                 .name(ColorUtil.translate("&cDelete This Category"))
@@ -107,12 +114,11 @@ public class CategoryManagerGUI extends GUI {
             new WarpsGUI(warpManager, null, player).open(player);
         });
 
-        List<Warp> warps = warpManager.getWarpsInCategory(category.getName());
-        int slot = 27;
-        for (Warp warp : warps) {
-            if (slot >= getSize()) {
-                break;
-            }
+        List<Warp> warps = warpManager.getWarpsInCategorySorted(category.getName());
+        List<Integer> previewSlots = getPreviewSlots(warps.size());
+        for (int index = 0; index < previewSlots.size(); index++) {
+            Warp warp = warps.get(index);
+            int slot = previewSlots.get(index);
 
             Integer overrideSlot = warpManager.getWarpSlotInCategory(category.getName(), warp.getId());
             setItem(slot, new ItemBuilder(warp.getMaterial())
@@ -127,8 +133,57 @@ public class CategoryManagerGUI extends GUI {
             String warpId = warp.getId();
             String warpName = warp.getName();
             setClickHandler(slot, event -> manageWarpSlot(event, category.getName(), warpId, warpName));
-            slot++;
         }
+    }
+
+    private void fillFrame() {
+        for (int slot = 45; slot < 54; slot++) {
+            setItem(slot, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE)
+                    .name(" ")
+                    .build());
+        }
+    }
+
+    private List<Integer> getPreviewSlots(int itemCount) {
+        List<Integer> slots = new ArrayList<>();
+        if (itemCount <= 0) {
+            return slots;
+        }
+
+        // Reserve two lower rows for a concise, non-overlapping preview section.
+        int firstRowCount = Math.min(9, itemCount);
+        int secondRowCount = Math.min(9, Math.max(0, itemCount - firstRowCount));
+
+        for (int col : distributedColumns(firstRowCount)) {
+            slots.add(27 + col);
+        }
+        for (int col : distributedColumns(secondRowCount)) {
+            slots.add(36 + col);
+        }
+
+        return slots;
+    }
+
+    private List<Integer> distributedColumns(int count) {
+        List<Integer> columns = new ArrayList<>();
+        if (count <= 0) {
+            return columns;
+        }
+        if (count == 1) {
+            columns.add(4);
+            return columns;
+        }
+
+        int previous = -1;
+        for (int i = 0; i < count; i++) {
+            int column = (int) Math.round(i * (8.0 / (count - 1)));
+            if (column <= previous) {
+                column = Math.min(8, previous + 1);
+            }
+            columns.add(column);
+            previous = column;
+        }
+        return columns;
     }
 
     private void renameCategory(InventoryClickEvent event) {
@@ -247,53 +302,16 @@ public class CategoryManagerGUI extends GUI {
         ).open(player);
     }
 
-    private void addWarp(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        player.closeInventory();
-
-        Rift.getInstance().getChatInputManager().awaitInput(player,
-                "&7Type a warp name to assign to &b" + categoryName,
-                input -> {
-                    Warp warp = warpManager.getWarp(input.trim());
-                    if (warp == null) {
-                        player.sendMessage(ChatFormat.error("Warp not found."));
-                        return;
-                    }
-
-                    warpManager.assignWarpCategory(warp, categoryName);
-                    AuditLogger.action(player, "category.assign", "category=" + categoryName + " warp=" + warp.getName());
-                    player.sendMessage(ChatFormat.success("Warp assigned."));
-                    new CategoryManagerGUI(warpManager, categoryName).open(player);
-                },
-                () -> player.sendMessage(ChatFormat.warning("Add warp cancelled."))
-        );
-    }
-
-    private void removeWarp(InventoryClickEvent event) {
-        Player player = (Player) event.getWhoClicked();
-        player.closeInventory();
-
-        Rift.getInstance().getChatInputManager().awaitInput(player,
-                "&7Type a warp name to remove from &b" + categoryName + "&7 (moves to default).",
-                input -> {
-                    Warp warp = warpManager.getWarp(input.trim());
-                    if (warp == null) {
-                        player.sendMessage(ChatFormat.error("Warp not found."));
-                        return;
-                    }
-
-                    if (!warp.getCategory().equalsIgnoreCase(categoryName)) {
-                        player.sendMessage(ChatFormat.error("That warp is not in this category."));
-                        return;
-                    }
-
-                    warpManager.assignWarpCategory(warp, "default");
-                    AuditLogger.action(player, "category.remove-warp", "category=" + categoryName + " warp=" + warp.getName());
-                    player.sendMessage(ChatFormat.success("Warp moved to default."));
-                    new CategoryManagerGUI(warpManager, categoryName).open(player);
-                },
-                () -> player.sendMessage(ChatFormat.warning("Remove warp cancelled."))
-        );
+    private void clearWarpSlotOverrides(Player player, Category category) {
+        if (category == null) {
+            player.sendMessage(ChatFormat.error("Category not found."));
+            return;
+        }
+        category.getWarpSlots().clear();
+        warpManager.updateCategory(category);
+        AuditLogger.action(player, "category.warp-slots.clear", "category=" + category.getName());
+        player.sendMessage(ChatFormat.success("Cleared warp slot overrides for " + category.getName()));
+        new CategoryManagerGUI(warpManager, categoryName).open(player);
     }
 
     private void deleteCategory(InventoryClickEvent event) {
@@ -346,18 +364,10 @@ public class CategoryManagerGUI extends GUI {
     }
 
     private int calculateCategoryMenuSize() {
-        int itemCount = Math.max(1, warpManager.getCategoriesForWarpsMenu().size());
-        int minRows = Math.max(3, Math.max(1, ConfigUtil.warpsGuiMinSize / 9));
-        int rows = (int) Math.ceil(itemCount / 9.0) + 2;
-        rows = Math.max(minRows, Math.min(ConfigUtil.warpsGuiMaxRows, rows));
-        return rows * 9;
+        return WarpsMenuLayout.menuSizeForItems(Math.max(1, warpManager.getCategoriesForWarpsMenu().size()));
     }
 
     private int calculateWarpMenuSize(String category) {
-        int itemCount = Math.max(1, warpManager.getWarpsInCategory(category).size());
-        int minRows = Math.max(3, Math.max(1, ConfigUtil.warpsGuiMinSize / 9));
-        int rows = (int) Math.ceil(itemCount / 9.0) + 2;
-        rows = Math.max(minRows, Math.min(ConfigUtil.warpsGuiMaxRows, rows));
-        return rows * 9;
+        return WarpsMenuLayout.menuSizeForItems(Math.max(1, warpManager.getWarpsInCategory(category).size()));
     }
 }

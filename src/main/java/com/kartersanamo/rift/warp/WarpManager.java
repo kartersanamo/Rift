@@ -297,8 +297,7 @@ public class WarpManager {
     public List<Category> getCategoriesForWarpsMenu() {
         List<Category> visible = new ArrayList<>();
         for (Category category : getCategoriesSorted()) {
-            if (category.getName().equalsIgnoreCase("default")
-                    && getWarpsInCategory("default").isEmpty()) {
+            if (category.getName().equalsIgnoreCase("default")) {
                 continue;
             }
             visible.add(category);
@@ -444,6 +443,35 @@ public class WarpManager {
             }
         }
         return filtered;
+    }
+
+    public List<Warp> getWarpsInCategorySorted(String category) {
+        List<Warp> filtered = getWarpsInCategory(category);
+        Category categoryData = getCategory(category);
+
+        filtered.sort((a, b) -> {
+            Integer slotA = categoryData != null ? categoryData.getWarpSlots().get(a.getId()) : null;
+            Integer slotB = categoryData != null ? categoryData.getWarpSlots().get(b.getId()) : null;
+            if (slotA != null && slotB != null) {
+                int compare = Integer.compare(slotA, slotB);
+                return compare != 0 ? compare : a.getName().compareToIgnoreCase(b.getName());
+            }
+            if (slotA != null) {
+                return -1;
+            }
+            if (slotB != null) {
+                return 1;
+            }
+            return a.getName().compareToIgnoreCase(b.getName());
+        });
+
+        return filtered;
+    }
+
+    public List<Warp> getAllWarpsSortedByName() {
+        List<Warp> sorted = new ArrayList<>(warps.values());
+        sorted.sort(Comparator.comparing(Warp::getName, String.CASE_INSENSITIVE_ORDER));
+        return sorted;
     }
 
     public Integer getCategorySlot(String categoryName) {

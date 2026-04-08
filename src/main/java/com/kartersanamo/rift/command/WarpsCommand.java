@@ -4,6 +4,7 @@ import com.kartersanamo.rift.api.command.BaseCommand;
 import com.kartersanamo.rift.api.command.CommandContext;
 import com.kartersanamo.rift.api.command.annotations.CommandPermission;
 import com.kartersanamo.rift.api.command.annotations.PlayerOnly;
+import com.kartersanamo.rift.api.config.ConfigUtil;
 import com.kartersanamo.rift.gui.WarpsGUI;
 import com.kartersanamo.rift.warp.Category;
 import com.kartersanamo.rift.warp.WarpManager;
@@ -39,6 +40,12 @@ public class WarpsCommand extends BaseCommand {
 
     @Override
     protected List<String> onTabComplete(CommandContext context) {
+        if (!ConfigUtil.warpsGuiCategoryFilterEnabled) {
+            return context.getArgs().length == 1 && "all".startsWith(context.getArgs()[0].toLowerCase(Locale.ROOT))
+                    ? List.of("all")
+                    : new ArrayList<>();
+        }
+
         if (context.getArgs().length != 1) {
             return new ArrayList<>();
         }

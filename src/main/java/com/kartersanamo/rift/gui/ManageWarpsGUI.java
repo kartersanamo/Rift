@@ -27,7 +27,7 @@ public class ManageWarpsGUI extends GUI {
 
     public ManageWarpsGUI(WarpManager warpManager, Warp warp) {
         super("manage_warps_gui",
-                "Warp Manager",
+                "Manage Warp",
                 27);
         this.warpManager = warpManager;
         this.warp = warp;
@@ -39,21 +39,31 @@ public class ManageWarpsGUI extends GUI {
         if (warp == null) {
             ItemStack nullItem = new ItemBuilder(Material.BARRIER)
                     .name(ColorUtil.translate(MessagesUtil.manageWarpErrorName))
-                    .lore(List.of(
-                            ColorUtil.translate(MessagesUtil.manageWarpErrorLine1),
-                            ColorUtil.translate(MessagesUtil.manageWarpErrorLine2),
-                            ColorUtil.translate(MessagesUtil.manageWarpErrorLine3),
-                            ColorUtil.translate(MessagesUtil.manageWarpErrorLine4)
+                    .lore(lore(
+                            MessagesUtil.manageWarpErrorLine1,
+                            MessagesUtil.manageWarpErrorLine2,
+                            MessagesUtil.manageWarpErrorLine3,
+                            MessagesUtil.manageWarpErrorLine4
                     ))
                     .build();
             setItem(13, nullItem);
             return;
         }
 
+        ItemStack changeSlotItem = new ItemBuilder(Material.COMPASS)
+                .name(ColorUtil.translate("&bSet Display Slot"))
+                .lore(lore(
+                        "&7Pick exactly where this warp appears",
+                        "&7inside its category GUI."
+                ))
+                .build();
+        setItem(10, changeSlotItem);
+        setClickHandler(10, this::changeDisplaySlot);
+
         // Change name item
         ItemStack changeNameItem = new ItemBuilder(Material.NAME_TAG)
                 .name(ColorUtil.translate(MessagesUtil.manageWarpChangeNameTitle))
-                .lore(List.of(
+                .lore(lore(
                         tr(MessagesUtil.manageWarpChangeNameLine1),
                         tr(MessagesUtil.manageWarpChangeNameLine2),
                         tr(MessagesUtil.blankLine),
@@ -69,7 +79,7 @@ public class ManageWarpsGUI extends GUI {
         // Change material item
         ItemStack changeMaterialItem = new ItemBuilder(warp.getMaterial())
                 .name(ColorUtil.translate(MessagesUtil.manageWarpChangeMaterialTitle))
-                .lore(List.of(
+                .lore(lore(
                         tr(MessagesUtil.manageWarpChangeMaterialLine1),
                         tr(MessagesUtil.manageWarpChangeMaterialLine2),
                         tr(MessagesUtil.blankLine),
@@ -109,7 +119,7 @@ public class ManageWarpsGUI extends GUI {
         // Change location item
         ItemStack changeLocationItem = new ItemBuilder(Material.MAP)
                 .name(ColorUtil.translate(MessagesUtil.manageWarpChangeLocationTitle))
-                .lore(List.of(
+                .lore(lore(
                         tr(MessagesUtil.manageWarpChangeLocationLine1),
                         tr(MessagesUtil.manageWarpChangeLocationLine2),
                         tr(MessagesUtil.blankLine),
@@ -125,9 +135,9 @@ public class ManageWarpsGUI extends GUI {
         // Change category item
         ItemStack changeCategoryItem = new ItemBuilder(Material.CHEST)
                 .name(ColorUtil.translate(MessagesUtil.manageWarpChangeCategoryTitle))
-                .lore(List.of(
+                .lore(lore(
                         tr(MessagesUtil.manageWarpChangeCategoryLine1),
-                        tr(MessagesUtil.manageWarpChangeCategoryLine2),
+                        "&7Click to open the category picker GUI.",
                         tr(MessagesUtil.blankLine),
                         tr(PlaceholderUtil.replace(
                                 MessagesUtil.manageWarpCurrent,
@@ -141,7 +151,7 @@ public class ManageWarpsGUI extends GUI {
         // Delete warp item
         ItemStack deleteWarpItem = new ItemBuilder(Material.BARRIER)
                 .name(ColorUtil.translate(MessagesUtil.managWarpDeleteTitle))
-                .lore(List.of(
+                .lore(lore(
                         tr(MessagesUtil.manageWarpDeleteLine1),
                         tr(MessagesUtil.manageWarpDeleteLine2),
                         tr(MessagesUtil.manageWarpDeleteLine3),
@@ -154,7 +164,7 @@ public class ManageWarpsGUI extends GUI {
         // Back button item
         ItemStack backButtonItem = new ItemBuilder(Material.ARROW)
                 .name(ColorUtil.translate(MessagesUtil.manageWarpBackTitle))
-                .lore(List.of(
+                .lore(lore(
                         tr(MessagesUtil.manageWarpBackLine1),
                         tr(MessagesUtil.manageWarpBackLine2)
                 ))
@@ -374,34 +384,26 @@ public class ManageWarpsGUI extends GUI {
         if (!ensureManagePermission(player)) {
             return;
         }
-        player.closeInventory();
+        new WarpCategoryPickerGUI(warpManager, warp).open(player);
+    }
 
-        Rift.getInstance().getChatInputManager().awaitInput(player,
-                MessagesUtil.manageWarpChangeCategoryPrompt,
-                input -> {
-                    String newCategory = input.trim();
+    private void changeDisplaySlot(InventoryClickEvent event) {
+        Player player = (Player) event.getWhoClicked();
+        if (!ensureManagePermission(player)) {
+            return;
+        }
 
-                    if (newCategory.isBlank()) {
-                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeCategoryInvalid));
-                        return;
-                    }
-
-                    String currentCategory = warp.getCategory();
-                    if (currentCategory != null && currentCategory.equalsIgnoreCase(newCategory)) {
-                        player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeCategorySame));
-                        return;
-                    }
-
-                    warp.setCategory(newCategory);
-                    warpManager.update(warp);
-                    AuditLogger.action(player, "warp.manage.category", "id=" + warp.getId() + " category=" + newCategory);
-                    player.sendMessage(tr(PlaceholderUtil.replace(
-                            MessagesUtil.manageWarpChangeCategorySuccess,
-                            "%value%", newCategory
-                    )));
+        String categoryName = warp.getCategory();
+        Integer current = warpManager.getWarpSlotInCategory(categoryName, warp.getId());
+        new SlotPickerGUI("Pick Warp Slot", WarpsMenuLayout.menuSizeForItems(Math.max(1, warpManager.getWarpsInCategory(categoryName).size())), true, current,
+                (p, slot) -> {
+                    warpManager.setWarpSlotInCategory(categoryName, warp.getId(), slot);
+                    AuditLogger.action(p, "warp.manage.slot", "id=" + warp.getId() + " category=" + categoryName + " slot=" + (slot == null ? "auto" : slot));
+                    p.sendMessage(ChatFormat.success("Warp display slot updated."));
+                    new ManageWarpsGUI(warpManager, warp).open(p);
                 },
-                () -> player.sendMessage(ColorUtil.translate(MessagesUtil.manageWarpChangeCategoryCancelled))
-        );
+                p -> new ManageWarpsGUI(warpManager, warp).open(p)
+        ).open(player);
     }
 
     // Called when someone clicks on the item to delete a warp
@@ -469,8 +471,19 @@ public class ManageWarpsGUI extends GUI {
     }
 
     private String tr(String message) {
+        if (message == null) {
+            return "";
+        }
         String translated = ColorUtil.translate(message);
         return translated != null ? translated : "";
+    }
+
+    private List<String> lore(String... lines) {
+        List<String> lore = new ArrayList<>();
+        for (String line : lines) {
+            lore.add(tr(line));
+        }
+        return lore;
     }
 
     private boolean ensureManagePermission(Player player) {
