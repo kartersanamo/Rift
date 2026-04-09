@@ -158,9 +158,8 @@ public class WarpsGUI extends GUI {
 
         Category category = warpManager.getCategory(categoryFilter);
         int pageSize = WarpsMenuLayout.innerCapacity(getSize());
-        int fromIndex = (page - 1) * pageSize;
-        int toIndex = Math.min(fromIndex + pageSize, warps.size());
-        List<Warp> pageWarps = warps.subList(fromIndex, toIndex);
+        long skipWarps = Math.max(0L, (long) (page - 1) * pageSize);
+        List<Warp> pageWarps = warps.stream().skip(skipWarps).limit(pageSize).toList();
         List<Integer> fallbackSlots = WarpsMenuLayout.distributedInnerSlots(getSize(), pageWarps.size());
         Set<Integer> used = new HashSet<>();
         int fallbackIndex = 0;
@@ -210,9 +209,11 @@ public class WarpsGUI extends GUI {
         }
 
         int pageSize = WarpsMenuLayout.innerCapacity(getSize());
-        int fromIndex = (page - 1) * pageSize;
-        int toIndex = Math.min(fromIndex + pageSize, categories.size());
-        List<Category> pageCategories = categories.subList(fromIndex, toIndex);
+        int startIndex = Math.max(0, (page - 1) * pageSize);
+        List<Category> pageCategories = new ArrayList<>();
+        for (int i = startIndex; i < categories.size() && pageCategories.size() < pageSize; i++) {
+            pageCategories.add(categories.get(i));
+        }
         List<Integer> fallbackSlots = WarpsMenuLayout.distributedInnerSlots(getSize(), pageCategories.size());
         Set<Integer> used = new HashSet<>();
         int fallbackIndex = 0;
@@ -334,29 +335,17 @@ public class WarpsGUI extends GUI {
 
         List<String> pageLore = new ArrayList<>();
         pageLore.add(ColorUtil.translate("&7Browsing " + (categoryMenu ? "categories" : "warps") + "."));
-        if (viewerCanManage) {
-            pageLore.add(ColorUtil.translate("&7Right-click to jump to a page."));
-        }
+        pageLore.add(ColorUtil.translate("&7Click to open page selector."));
 
         setItem(SLOT_PAGE_INFO, new ItemBuilder(Material.PAPER)
                 .name(ColorUtil.translate("&bPage " + page + "/" + totalPages))
                 .lore(pageLore)
                 .build());
         setClickHandler(SLOT_PAGE_INFO, event -> {
-            if (!viewerCanManage || !(event.getWhoClicked() instanceof Player player)) {
+            if (!(event.getWhoClicked() instanceof Player player)) {
                 return;
             }
-
-            if (!event.getClick().isRightClick()) {
-                return;
-            }
-
-            player.closeInventory();
-            Rift.getInstance().getChatInputManager().awaitInput(player,
-                    MessagesUtil.warpsGuiPageJumpPrompt,
-                    input -> handlePageJump(player, input),
-                    () -> player.sendMessage(ChatFormat.warning(ColorUtil.translate(MessagesUtil.warpsGuiPageJumpCancelled)))
-            );
+            new PageSelectorGUI(warpManager, categoryFilter, player, page, 1).open(player);
         });
 
         if (page < totalPages) {
@@ -399,35 +388,6 @@ public class WarpsGUI extends GUI {
         );
     }
 
-    private void handlePageJump(Player player, String input) {
-        String raw = input == null ? "" : input.trim();
-        if (raw.isBlank()) {
-            player.sendMessage(ChatFormat.error(ColorUtil.translate(MessagesUtil.warpsGuiPageJumpInvalid)));
-            new WarpsGUI(warpManager, categoryFilter, player, page).open(player);
-            return;
-        }
-
-        int requestedPage;
-        try {
-            requestedPage = Integer.parseInt(raw);
-        } catch (NumberFormatException ex) {
-            player.sendMessage(ChatFormat.error(ColorUtil.translate(MessagesUtil.warpsGuiPageJumpInvalid)));
-            new WarpsGUI(warpManager, categoryFilter, player, page).open(player);
-            return;
-        }
-
-        int totalPages = getPageCount(warpManager, categoryFilter, getSize());
-        if (requestedPage < 1 || requestedPage > totalPages) {
-            player.sendMessage(ChatFormat.error(ColorUtil.translate(PlaceholderUtil.replace(
-                    MessagesUtil.warpsGuiPageJumpOutOfRange,
-                    "%max%", String.valueOf(totalPages)
-            ))));
-            new WarpsGUI(warpManager, categoryFilter, player, page).open(player);
-            return;
-        }
-
-        new WarpsGUI(warpManager, categoryFilter, player, requestedPage).open(player);
-    }
 
     private void createWarpHere(Player player) {
         player.closeInventory();
@@ -532,4 +492,5 @@ public class WarpsGUI extends GUI {
             warpManager.update(warp);
         }
     }
+
 }
